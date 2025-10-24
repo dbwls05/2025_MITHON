@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>테스트 웹사이트</title>
+<style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h2 { margin-top: 30px; }
+    input, select, button { margin: 5px 0; padding: 5px; }
+    .section { border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; }
+    .list { margin-top: 10px; }
+    .list-item { margin-bottom: 5px; }
+</style>
+</head>
+<body>
+
+<h1>서버 API 테스트 사이트</h1>
+
+<!-- 1. 학교 검색 -->
+<div class="section">
+    <h2>1. 학교 검색 및 선택</h2>
+    <input type="text" id="schoolName" placeholder="학교 이름">
+    <select id="schoolLevel" style="display:none">
+    <option value="고등학교" selected>고등학교</option>
+    </select>
+    <button onclick="searchSchools()">검색</button>
+    <div id="schoolResults" class="list"></div>
+    <div>선택된 학교 DB ID: <span id="selectedSchoolId">없음</span></div>
+</div>
+
+<!-- 2. 학과 조회 및 등록 -->
+<div class="section">
+    <h2>2. 학과 조회 및 등록</h2>
+    <button onclick="getDepartments()">DB 학과 조회</button>
+    <div id="departmentResults" class="list"></div>
+    <div>선택된 학과 DB ID: <span id="selectedDeptId">없음</span></div>
+</div>
+
+<!-- 3. 사용자 등록 -->
+<div class="section">
+    <h2>3. 사용자 등록</h2>
+    <input type="text" id="userName" placeholder="이름">
+    <input type="password" id="userPassword" placeholder="비밀번호">
+    <button onclick="registerUser()">등록</button>
+    <div id="registerResult"></div>
+</div>
+
+<script>
+let selectedSchoolId = null;
+let selectedDeptId = null;
+
+// ====== 학교 검색 ======
+async function searchSchools() {
+    const name = document.getElementById('schoolName').value;
+    const level = document.getElementById('schoolLevel').value;
+    const res = await fetch(`/api/schools/search?name=${encodeURIComponent(name)}&schoolLevel=${encodeURIComponent(level)}`);
+    const data = await res.json();
+    const container = document.getElementById('schoolResults');
+    container.innerHTML = '';
+    if (data.success && data.data.length > 0) {
+        data.data.forEach(s => {
+            const div = document.createElement('div');
+            div.className = 'list-item';
+            div.textContent = `[${s.schoolCode}] ${s.schoolName} (${s.schoolType}) `;
+
+            const btn = document.createElement('button');
+            btn.textContent = '선택';
+            btn.onclick = () => selectSchool(s.schoolCode, s.schoolName);
+            div.appendChild(btn);
+
+            container.appendChild(div);
+        });
+    } else {
+        container.textContent = '검색 결과가 없습니다.';
+    }
+}
+
+// 학교 선택 및 DB 등록
+async function selectSchool(externalId, name) {
+    const res = await fetch('/api/schools', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, externalId })
+    });
+    const data = await res.json();
+    selectedSchoolId = data.schoolId || data.data?.id;
+    document.getElementById('selectedSchoolId').textContent = selectedSchoolId;
+    alert(`${name} 선택됨!`);
+
+    // 선택한 학교 학과 바로 조회
+    getDepartments();
+}
+
+// ====== 학과 조회 및 등록 ======
+async function getDepartments() {
+    if (!selectedSchoolId) {
+        alert('먼저 학교를 선택해주세요.');
+        return;
+    }
+
+    const container = document.getElementById('departmentResults');
+    container.innerHTML = '';
+
+    // 1) DB 학과 조회
+    const dbRes = await fetch(`/api/schools/${selectedSchoolId}/departments`);
+    const dbData = await dbRes.json();
+    if (dbData.success && dbData.data.length > 0) {
+        dbData.data.forEach(d => {
+            const div = document.createElement('div');
+            div.className = 'list-item';
+            div.textContent = `[${d.id}] ${d.name} `;
+
+            const btn = document.createElement('button');
+            btn.textContent = '선택';
+            btn.onclick = () => {
+                selectedDeptId = d.id;
+                document.getElementById('selectedDeptId').textContent = selectedDeptId;
+            };
+            div.appendChild(btn);
+
+            container.appendChild(div);
+        });
+    } else {
+        container.textContent = 'DB 학과가 없습니다.';
+    }
+
+    // 2) NICE API 학과 조회 후 등록 가능
+    const apiRes = await fetch(`/api/departments/search?officeCode=교육청코드&schoolCode=${selectedSchoolId}`);
+    const apiData = await apiRes.json();
+    if (apiData.success && apiData.data.length > 0) {
+        apiData.data.forEach(d => {
+            const btn = document.createElement('button');
+            btn.textContent = `등록: ${d.departmentName}`;
+            btn.onclick = async () => {
+                const res = await fetch('/api/departments', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        schoolId: selectedSchoolId,
+                        name: d.departmentName,
+                        externalId: d.departmentCode
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert(`${d.departmentName} 등록 완료!`);
+                    getDepartments(); // 등록 후 DB 학과 다시 조회
+                } else {
+                    alert(`등록 실패: ${data.error}`);
+                }
+            };
+            container.appendChild(btn);
+        });
+    }
+}
+
+// ====== 사용자 등록 ======
+async function registerUser() {
+    if (!selectedSchoolId) {
+        alert('학교를 먼저 선택하세요.');
+        return;
+    }
+    const user = {
+        name: document.getElementById('userName').value,
+        password: document.getElementById('userPassword').value,
+        schoolId: selectedSchoolId,
+        departmentId: selectedDeptId
+    };
+    const res = await fetch('/api/users/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(user)
+    });
+    const data = await res.json();
+    document.getElementById('registerResult').textContent = data.success ? `등록 성공! ID: ${data.userId}` : `실패: ${data.error}`;
+}
+</script>
+
+</body>
+</html>
