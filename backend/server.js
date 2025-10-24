@@ -86,14 +86,14 @@ app.post('/api/schools', async (req, res) => {
 // ============================
 // 사용자 ID 중복 확인 API (404 오류 해결)
 // ============================
-app.get('/api/users/check-idname', async (req, res) => {
+// 백엔드
+app.get('/api/users/idname/:idname', async (req, res) => {
     try {
-        const { idname } = req.query;
+        const { idname } = req.params;
         if (!idname) return res.status(400).json({ success: false, error: 'ID가 필요합니다.' });
 
         const existingUser = await db.getUserByIdname(idname);
 
-        // 사용자가 존재하면 success: false (중복), 없으면 success: true (사용 가능) 반환
         res.json({ success: !existingUser, message: existingUser ? '이미 사용 중인 ID입니다.' : '사용 가능한 ID입니다.' });
     } catch (err) {
         console.error('ID 중복확인 에러:', err);
