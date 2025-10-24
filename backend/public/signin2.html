@@ -40,7 +40,7 @@
             font-size: 20px;
             text-align: center;
             flex-grow: 1;
-            margin-right: 24px; /* 뒤로가기 버튼 너비만큼 오프셋 */
+            margin-right: 24px;
         }
 
         .progress-bar {
@@ -50,7 +50,7 @@
         }
 
         .progress {
-            width: 33%;
+            width: 50%;
             height: 100%;
             background-color: #2ecc71;
         }
@@ -117,21 +117,23 @@
             cursor: pointer;
         }
 
-        /* 변경: 내부 a 태그 밑줄 제거 + 희색 텍스트 */
-        .next-button a {
-            color: #f0f0f0;         /* 희색 계열 텍스트 */
-            text-decoration: none;  /* 밑줄 제거 */
-            display: inline-block;
-            width: 100%;
-            height: 100%;
-            line-height: normal;
+        .next-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            color: #ff0000;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <span class="back-button">←</span>
+            <span class="back-button" onclick="history.back()">←</span>
             <h1>회원가입</h1>
         </div>
         
@@ -144,35 +146,115 @@
 
         <div class="form-group">
             <label class="form-label">이름</label>
-            <input type="text" class="input-field" placeholder="이름을 입력해주세요.">
+            <input type="text" class="input-field" id="userName" placeholder="이름을 입력해주세요." required>
+            <p class="error-message" id="name-error">이름을 입력해주세요.</p>
         </div>
 
         <div class="form-group">
             <label class="form-label">학교</label>
-            <input type="text" class="input-field" placeholder="학교를 입력해주세요.">
+            <input type="text" class="input-field" id="userSchool" placeholder="학교를 입력해주세요." required>
+            <p class="error-message" id="school-error">학교를 입력해주세요.</p>
         </div>
 
         <div class="form-group">
             <label class="form-label">학년</label>
-            <select class="dropdown">
+            <select class="dropdown" id="userGrade" required>
                 <option value="" disabled selected>학년을 선택해주세요.</option>
                 <option value="1">1학년</option>
                 <option value="2">2학년</option>
                 <option value="3">3학년</option>
             </select>
+            <p class="error-message" id="grade-error">학년을 선택해주세요.</p>
         </div>
 
         <div class="form-group">
             <label class="form-label">반</label>
-            <select class="dropdown">
+            <select class="dropdown" id="userClass" required>
                 <option value="" disabled selected>반을 선택해주세요.</option>
                 <option value="1">1반</option>
                 <option value="2">2반</option>
                 <option value="3">3반</option>
+                <option value="4">4반</option>
+                <option value="5">5반</option>
+                <option value="6">6반</option>
+                <option value="7">7반</option>
+                <option value="8">8반</option>
+                <option value="9">9반</option>
+                <option value="10">10반</option>
             </select>
+            <p class="error-message" id="class-error">반을 선택해주세요.</p>
         </div>
 
-        <button class="next-button"><a href="siginIn3.html">다음</a></button>
+        <button class="next-button" onclick="proceedToNext()">다음</button>
     </div>
+
+    <script>
+        // 페이지 로드 시 이전 페이지 데이터 확인
+        window.addEventListener('DOMContentLoaded', () => {
+            if (!sessionStorage.getItem('tempIdname') || !sessionStorage.getItem('tempPassword')) {
+                alert('잘못된 접근입니다.');
+                window.location.href = 'signIn1.html';
+            }
+        });
+
+        function validateForm() {
+            const name = document.getElementById('userName').value.trim();
+            const school = document.getElementById('userSchool').value.trim();
+            const grade = document.getElementById('userGrade').value;
+            const classNum = document.getElementById('userClass').value;
+
+            let isValid = true;
+
+            if (!name) {
+                document.getElementById('name-error').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('name-error').style.display = 'none';
+            }
+
+            if (!school) {
+                document.getElementById('school-error').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('school-error').style.display = 'none';
+            }
+
+            if (!grade) {
+                document.getElementById('grade-error').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('grade-error').style.display = 'none';
+            }
+
+            if (!classNum) {
+                document.getElementById('class-error').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('class-error').style.display = 'none';
+            }
+
+            return isValid;
+        }
+
+        function proceedToNext() {
+            if (!validateForm()) {
+                return;
+            }
+
+            const name = document.getElementById('userName').value.trim();
+            const school = document.getElementById('userSchool').value.trim();
+            const grade = document.getElementById('userGrade').value;
+            const classNum = document.getElementById('userClass').value;
+
+            // 임시 저장
+            sessionStorage.setItem('tempName', name);
+            sessionStorage.setItem('tempSchool', school);
+            sessionStorage.setItem('tempGrade', grade);
+            sessionStorage.setItem('tempClass', classNum);
+
+            // 다음 페이지로 이동
+            window.location.href = 'siginIn3.html';
+        }
+    </script>
 </body>
 </html>
