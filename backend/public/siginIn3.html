@@ -149,14 +149,6 @@
     </div>
 
     <script>
-        // 페이지 로드 시 이전 페이지 데이터 확인
-        window.addEventListener('DOMContentLoaded', () => {
-            if (!sessionStorage.getItem('tempIdname') || !sessionStorage.getItem('tempName')) {
-                alert('잘못된 접근입니다.');
-                window.location.href = 'signIn1.html';
-            }
-        });
-
         function toggleSelection(element) {
             element.classList.toggle('selected');
             updateNextButton();

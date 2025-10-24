@@ -100,23 +100,25 @@
         <div class="countdown" id="countdown">3초 후 로그인 페이지로 이동합니다...</div>
     </div>
 
-    <script>
-        let count = 3;
-        const countdownEl = document.getElementById('countdown');
+ <script>
+function updateCharCount(textarea) {
+    const count = textarea.value.length;
+    document.querySelector('.char-count').textContent = `${count}/30`;
+    
+    const nextBtn = document.getElementById('nextBtn');
+    if(count > 0) {
+        nextBtn.classList.add('active');
+    } else {
+        nextBtn.classList.remove('active');
+    }
+}
 
-        const timer = setInterval(() => {
-            count--;
-            if (count > 0) {
-                countdownEl.textContent = `${count}초 후 로그인 페이지로 이동합니다...`;
-            } else {
-                clearInterval(timer);
-                window.location.href = 'index.html';
-            }
-        }, 1000);
+// 항상 다음 페이지로 이동
+document.getElementById('nextBtn').addEventListener('click', () => {
+    window.location.href = 'finishSignin.html';
+});
+</script>
 
-        // 회원가입 완료 후 임시 데이터 삭제
-        sessionStorage.clear();
-    </script>
 </body>
 
 </html>

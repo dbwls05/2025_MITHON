@@ -117,13 +117,6 @@
     </div>
 
 <script>
-    // 페이지 로드 시 이전 데이터 확인
-    window.addEventListener('DOMContentLoaded', () => {
-        if (!sessionStorage.getItem('tempIdname') || !sessionStorage.getItem('tempName')) {
-            alert('잘못된 접근입니다.');
-            window.location.href = 'signIn1.html';
-        }
-    });
 
     // 선택 토글 및 버튼 상태 업데이트
     function toggleTag(el){

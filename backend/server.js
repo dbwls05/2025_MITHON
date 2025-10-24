@@ -107,7 +107,7 @@ app.get('/api/users/idname/:idname', async (req, res) => {
 // ============================
 app.post('/api/users/register', async (req, res) => {
   try {
-    const { idname, name, password, comment, grade, classNum, profilePhoto, schoolId } = req.body;
+    const { idname, name, password, grade, classNum } = req.body;
     
     // 필수 필드 검증
     if (!idname || !password || !name || !schoolId || !grade || !classNum) {
