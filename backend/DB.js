@@ -5,7 +5,7 @@ const pool = mysql.createPool({
     host: 'localhost',
     user: 'mithon2025',
     password: 'mithon2025admin',
-    database: 'MITHON',
+    database: 'MITHON_1',
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
@@ -60,79 +60,33 @@ async function getSchoolByExternalId(externalId) {
 }
 
 // ============================================
-// SCHOOL_DEPARTMENT 관련 함수
-// ============================================
-
-/**
- * 학과 추가
- */
-async function addDepartment(schoolId, name, externalId = null) {
-    const [result] = await pool.query(
-        'INSERT INTO SCHOOL_DEPARTMENT (school_id, name, external_id) VALUES (?, ?, ?)',
-        [schoolId, name, externalId]
-    );
-    return result.insertId;
-}
-
-/**
- * 학교별 학과 조회
- */
-async function getDepartmentsBySchool(schoolId) {
-    const [rows] = await pool.query(
-        'SELECT * FROM SCHOOL_DEPARTMENT WHERE school_id = ?',
-        [schoolId]
-    );
-    return rows;
-}
-
-/**
- * 학과 ID로 조회
- */
-async function getDepartmentById(departmentId) {
-    const [rows] = await pool.query(
-        'SELECT * FROM SCHOOL_DEPARTMENT WHERE id = ?',
-        [departmentId]
-    );
-    return rows[0];
-}
-
-/**
- * 학교와 학과명으로 조회 (중복 체크용)
- */
-async function getDepartmentBySchoolAndName(schoolId, name) {
-    const [rows] = await pool.query(
-        'SELECT * FROM SCHOOL_DEPARTMENT WHERE school_id = ? AND name = ?',
-        [schoolId, name]
-    );
-    return rows[0];
-}
-
-// ============================================
 // USER 관련 함수
 // ============================================
 
-/**
- * 회원가입
- */
+// 회원가입
 async function registerUser(userData) {
-    const { name, password, comment, grade, classNum, profilePhoto, schoolId, departmentId } = userData;
+    const { idname, name, password, comment, grade, classNum, profilePhoto, schoolId } = userData;
     const [result] = await pool.query(
-        'INSERT INTO USER (name, password, comment, grade, class, profile_photo, school_id, department_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        [name, password, comment, grade, classNum, profilePhoto, schoolId, departmentId]
+        `INSERT INTO USER 
+        (idname, name, password, comment, grade, class, profile_photo, school_id) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [idname, name, password, comment, grade, classNum, profilePhoto, schoolId]
     );
     return result.insertId;
 }
 
-/**
- * 로그인 (이름으로 사용자 조회)
- */
-async function getUserByName(name) {
+
+// 로그인 (idname 기준)
+async function getUserByIdname(idname) {
     const [rows] = await pool.query(
-        'SELECT * FROM USER WHERE name = ?',
-        [name]
+        'SELECT * FROM USER WHERE idname = ?',
+        [idname]
     );
     return rows[0];
 }
+
+// 기존 getUserByName는 필요하면 그대로 두고, idname 로그인용으로 getUserByIdname 추가
+
 
 /**
  * 사용자 ID로 조회
@@ -265,7 +219,6 @@ async function deleteMapComment(commentId) {
 // ============================================
 // Export
 // ============================================
-
 module.exports = {
     pool,
     // School
@@ -273,14 +226,9 @@ module.exports = {
     findSchoolByName,
     getSchoolById,
     getSchoolByExternalId,
-    // Department
-    addDepartment,
-    getDepartmentsBySchool,
-    getDepartmentById,
-    getDepartmentBySchoolAndName,  // 추가됨
     // User
     registerUser,
-    getUserByName,
+    getUserByIdname,   // idname 로그인용
     getUserById,
     updateUser,
     getUsersBySchool,
