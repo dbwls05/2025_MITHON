@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background-color: #fff;
+        }
+
+        .container {
+            width: 393px;
+            height: 852px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #fff;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .back-button {
+            font-size: 24px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        h1 {
+            font-size: 20px;
+            text-align: center;
+            flex-grow: 1;
+            margin-right: 24px;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background-color: #eee;
+            margin-bottom: 40px;
+        }
+
+        .progress {
+            width: 66%;
+            height: 100%;
+            background-color: #2ecc71;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #888;  /* 글자 색상 조정 */
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .chat-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;  /* 간격 증가 */
+            margin-top: 20px;  /* 상단 여백 추가 */
+        }
+
+        .chat-item {
+            background-color: #dcf3bb;
+            padding: 20px;  /* 패딩 증가 */
+            border-radius: 15px;  /* 모서리 더 둥글게 */
+            font-size: 16px;
+            width: 100%;  /* 너비 100%로 변경 */
+            max-width: 100%;  /* 최대 너비 100%로 변경 */
+            align-self: flex-start;
+            cursor: pointer;  /* 클릭 가능한 커서 추가 */
+            transition: background-color 0.3s;
+        }
+
+        .chat-item.selected {
+            background-color: #B2F15A;
+            position: relative;
+        }
+
+        .error-message {
+            color: #ff0000;
+            font-size: 14px;
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .next-button {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 40px);
+            max-width: 353px;
+            padding: 18px;
+            margin-bottom: 20px;  /* 하단 여백 추가 */
+            background-color: #333;  /* 버튼 색상 조정 */
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* 변경: 선택이 없을 때 회색 스타일 */
+        .next-button.inactive {
+            background-color: #d9d9d9;
+            color: #6b6b6b;
+        }
+
+        .profile-icon {
+            position: fixed;
+            bottom: 90px;  /* 위치 조정 */
+            right: 30px;  /* 위치 조정 */
+            width: 45px;  /* 크기 증가 */
+            height: 45px;  /* 크기 증가 */
+            background-color: #fff;  /* 배경색 흰색으로 변경 */
+            border: 2px solid #ddd;  /* 테두리 추가 */
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;  /* 아이콘 크기 증가 */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <span class="back-button">←</span>
+            <h1>회원가입</h1>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress"></div>
+        </div>
+
+        <div class="title">평소,<br>어떤 대화가 하고 싶으신가요?</div>
+        <p class="subtitle">오늘의 기분에 따라 편하게 골라보세요!</p>
+
+        <div class="chat-list">
+            <div class="chat-item" onclick="toggleSelection(this)">가볍고 재밌는 수다~</div>
+            <div class="chat-item" onclick="toggleSelection(this)">조용하고 편안한 공감 😌</div>
+            <div class="chat-item" onclick="toggleSelection(this)">열정적인 관심사 토크🔥</div>
+            <div class="chat-item" onclick="toggleSelection(this)">정보 공유/Q&A ✍️</div>
+        </div>
+
+        <p class="error-message" id="error-msg">선택하지 않았습니다. 선택해주세요.</p>
+        <div class="profile-icon">👤</div>
+        <button id="nextBtn" class="next-button" onclick="validateSelection()">다음</button>
+    </div>
+
+    <script>
+        function toggleSelection(element) {
+            element.classList.toggle('selected');
+            updateNextButton();
+        }
+
+        function updateNextButton() {
+            const selectedItems = document.querySelectorAll('.chat-item.selected');
+            const nextBtn = document.getElementById('nextBtn');
+            if (selectedItems.length === 0) {
+                nextBtn.classList.add('inactive');
+            } else {
+                nextBtn.classList.remove('inactive');
+            }
+        }
+
+        function validateSelection() {
+            const selectedItems = document.querySelectorAll('.chat-item.selected');
+            const errorMsg = document.getElementById('error-msg');
+
+            if (selectedItems.length === 0) {
+                errorMsg.style.display = 'block';
+                // 3초 후 에러 메시지 숨기기
+                setTimeout(() => {
+                    errorMsg.style.display = 'none';
+                }, 3000);
+            } else {
+                errorMsg.style.display = 'none';
+                // 여기에 다음 페이지로 이동하는 로직 추가
+            }
+        }
+
+        // 초기 상태 반영
+        document.addEventListener('DOMContentLoaded', updateNextButton);
+    </script>
+</body>
+</html>
