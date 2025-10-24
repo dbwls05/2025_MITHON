@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
-const db = require('./DB');
+const db = 
+require('./DB');
 const niceAPI = require('./niceAPI');
 
 const app = express();
