@@ -27,6 +27,7 @@
             flex-direction: column;
             position: relative;
             box-shadow: 0 0 16px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
         }
 
         .header {
@@ -72,7 +73,7 @@
             gap: 18px;
             font-size: 15px;
             margin-bottom: 18px;
-            margin-top: 8px;
+            margin-top: 8px; /*유진아 나는 재희야ㅜㅜ 너무 힘들어 죽을 거 같아 그러니까 살려줘ㅜㅜㅜㅜ 플리즈*/
         }
 
         .tab {
@@ -120,7 +121,7 @@
         }
 
         .marker img {
-            width: 34px;
+            width: 34px;    
             height: 40px;
             display: block;
         }
@@ -159,11 +160,12 @@
 
         /* 플로팅 바 */
         .bottom-nav {
-            position: fixed;
+            position: absolute;
             left: 50%;
             transform: translateX(-50%);
             bottom: 18px;
-            width: 353px;
+            width: calc(100% - 40px);
+            max-width: 353px;
             background: #c8f179;
             border-radius: 30px;
             padding: 12px 18px;
@@ -223,7 +225,7 @@
             </div>
             <div>HOME</div>
         </a>
-        <a class="nav-item" href="myPage.html">
+        <a class="nav-item" href="frontend\pages\myPage.html">
             <div class="nav-icon"><img src="../assets/img/Profile_icon.png" alt="profile"
                     style="width:22px;height:22px;"></div>
             <div>PROFILE</div>
