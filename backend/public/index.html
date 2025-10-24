@@ -1,136 +1,195 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
-<meta charset="UTF-8">
-<title>맵 & 댓글 테스트</title>
-<style>
-body { font-family: Arial, sans-serif; margin: 20px; }
-section { margin-bottom: 30px; }
-h2 { margin-bottom: 10px; }
-input, button { margin: 5px 0; padding: 5px; }
-textarea { width: 300px; height: 60px; }
-.comment { border-bottom: 1px solid #ccc; padding: 5px 0; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DoNut</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        html {
+            min-height: 852px;
+            background-color: #f8f9fa;
+        }
+
+        body {
+            width: 393px;
+            height: 852px;
+            min-height: 852px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .container {
+            width: 100%;
+            min-height: 812px;
+            margin: 0 auto;
+            background: white;
+            padding: 100px 20px 0 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        .header {
+            text-align: left;
+            margin-top: 8px;
+            margin-bottom: 8px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        h1 span {
+            color: #86D715;
+        }
+
+        p {
+            color: #232323;
+            font-size: 14px;
+        }
+
+        .input-container {
+            margin-bottom: 16px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 15px 0;
+            border: none;
+            border-bottom: 1px solid #E0E0E0;
+            font-size: 16px;
+            margin-bottom: 24px;
+            background: transparent;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-bottom-color: #8BC34A;
+        }
+
+        .input-field::placeholder {
+            color: #999;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 18px;
+            background-color: #000;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: auto;
+            margin-bottom: 30px;
+        }
+
+        .links {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 0;
+            font-size: 14px;
+        }
+
+        .links a {
+            color: #86D715;
+            text-decoration: none;
+        }
+
+        .links a:hover {
+            color: #8BC34A;
+        }
+
+        .separator {
+            color: #E0E0E0;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .error-message {
+            color: #ff0000;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+    </style>
 </head>
+
 <body>
+    <div class="container">
+        <div class="header">
+            <h1><span>DoNut</span>에 오신걸 환영합니다</h1>
+            <p>회원 서비스 이용을 위해 로그인해 주세요</p>
+        </div>
 
-<h1>맵 & 댓글 테스트 페이지</h1>
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="input-container">
+                <input type="text" id="userId" class="input-field" placeholder="아이디" required>
+                <input type="password" id="userPw" class="input-field" placeholder="비밀번호" required>
+            </div>
 
-<section>
-<h2>맵 목록 조회</h2>
-<button onclick="getMaps()">맵 목록 불러오기</button>
-<ul id="mapList"></ul>
-</section>
+            <div class="links">
+                <a href="#">아이디 찾기</a>
+                <span class="separator">|</span>
+                <a href="#">비밀번호 찾기</a>
+                <span class="separator">|</span>
+                <a href="signIn1.html">회원가입</a>
+            </div>
 
-<section>
-<h2>맵 선택 후 댓글 작성</h2>
-<label>맵 ID: <input type="number" id="mapIdInput"></label><br>
-<label>유저 ID: <input type="number" id="userIdInput"></label><br>
-<textarea id="commentText" placeholder="댓글 내용"></textarea><br>
-<button onclick="addComment()">댓글 작성</button>
-<ul id="mapComments"></ul>
-</section>
+            <button type="submit" class="login-btn">로그인하기</button>
+        </form>
+    </div>
 
-<section>
-<h2>사용자별 댓글 조회</h2>
-<label>유저 ID: <input type="number" id="userIdForComments"></label>
-<button onclick="getUserComments()">조회</button>
-<ul id="userComments"></ul>
-</section>
+    <script>
+    async function handleLogin(event) {
+        event.preventDefault();
 
-<script>
-// ============================
-// 맵 목록 조회
-// ============================
-async function getMaps() {
-  const res = await fetch('/api/maps');
-  const data = await res.json();
-  const ul = document.getElementById('mapList');
-  ul.innerHTML = '';
-  if (data.success) {
-    data.data.forEach(map => {
-      const li = document.createElement('li');
-      li.textContent = `ID: ${map.id}, 이름: ${map.name}`;
-      ul.appendChild(li);
-    });
-  } else {
-    alert('맵 조회 실패');
-  }
-}
+        const idname = document.getElementById('userId').value;
+        const password = document.getElementById('userPw').value;
 
-// ============================
-// 댓글 작성
-// ============================
-async function addComment() {
-  const mapId = document.getElementById('mapIdInput').value;
-  const userId = document.getElementById('userIdInput').value;
+        try {
+            // Express 서버와 연동된 실제 DB API 호출
+            const response = await fetch('http://localhost:8080/api/users/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idname, password })
+            });
 
-  if (!mapId || !userId) {
-    alert('맵 ID와 유저 ID를 입력하세요.');
-    return;
-  }
+            const data = await response.json();
 
-  try {
-    const res = await fetch(`/api/maps/${mapId}/comments`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId })
-    });
-    const data = await res.json();
-    if (data.success) {
-      alert(`댓글 작성 완료. 댓글 ID: ${data.commentId}`);
-      getMapComments(mapId);
-    } else {
-      alert('댓글 작성 실패: ' + data.error);
+            if (data.success) {
+                // 로그인 성공
+                localStorage.setItem('user', JSON.stringify(data.user));
+                window.location.href = '/signIn1.html'; // ← 여기를 변경
+            } else {
+                alert(data.error || '아이디 또는 비밀번호가 일치하지 않습니다.');
+            }
+        } catch (err) {
+            console.error('로그인 에러:', err);
+            alert('서버 연결 실패');
+        }
     }
-  } catch (err) {
-    console.error(err);
-    alert('댓글 작성 중 오류 발생');
-  }
-}
-
-// ============================
-// 맵별 댓글 조회
-// ============================
-async function getMapComments(mapId) {
-  const res = await fetch(`/api/maps/${mapId}/comments`);
-  const data = await res.json();
-  const ul = document.getElementById('mapComments');
-  ul.innerHTML = '';
-  if (data.success) {
-    data.data.forEach(c => {
-      const li = document.createElement('li');
-      li.className = 'comment';
-      li.textContent = `댓글 ID: ${c.id}, 사용자: ${c.name}, 프로필: ${c.profile_photo || '-'}, 맵 ID: ${c.map_id}`;
-      ul.appendChild(li);
-    });
-  } else {
-    alert('댓글 조회 실패');
-  }
-}
-
-// ============================
-// 사용자별 댓글 조회
-// ============================
-async function getUserComments() {
-  const userId = document.getElementById('userIdForComments').value;
-  if (!userId) { alert('유저 ID 입력'); return; }
-
-  const res = await fetch(`/api/users/${userId}/comments`);
-  const data = await res.json();
-  const ul = document.getElementById('userComments');
-  ul.innerHTML = '';
-  if (data.success) {
-    data.data.forEach(c => {
-      const li = document.createElement('li');
-      li.className = 'comment';
-      li.textContent = `댓글 ID: ${c.id}, 맵: ${c.map_name}, 맵 ID: ${c.map_id}`;
-      ul.appendChild(li);
-    });
-  } else {
-    alert('사용자 댓글 조회 실패');
-  }
-}
 </script>
 
 </body>
