@@ -1,15 +1,21 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DOINUT - 지도</title>
+    <link rel="stylesheet" href="../css/common.css">
     <style>
-        * {
+        html,
+        body {
+            width: 100vw;
+            height: 100vh;
+            min-width: 393px;
+            min-height: 852px;
+            background: #fff;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
 
         .container {
@@ -17,132 +23,284 @@
             height: 852px;
             margin: 0 auto;
             background: #fff;
+            display: flex;
+            flex-direction: column;
             position: relative;
+            box-shadow: 0 0 16px rgba(0, 0, 0, 0.04);
         }
 
         .header {
-            padding: 20px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #eee;
+            gap: 10px;
+            margin-top: 32px;
+            margin-bottom: 18px;
         }
 
         .logo {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #eef9e6;
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
+            margin-right: 8px;
         }
 
-        .logo-icon {
-            width: 30px;
-            height: 30px;
-            background: #96E072;
-            border-radius: 50%;
+        .logo img {
+            width: 36px;
+            height: 36px;
         }
 
-        .logo-text {
+        .brand {
+            font-size: 22px;
+            font-weight: bold;
+            color: #8BC34A;
+            margin-right: 12px;
+        }
+
+        .school {
+            font-size: 18px;
+            font-weight: 700;
+            color: #222;
+            margin-bottom: 8px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 18px;
+            font-size: 15px;
+            margin-bottom: 18px;
+            margin-top: 8px;
+        }
+
+        .tab {
+            color: #222;
+            cursor: pointer;
+            padding-bottom: 2px;
+        }
+
+        .tab.active {
+            font-weight: bold;
+            border-bottom: 2px solid #222;
+            background: none;
+        }
+
+        .map-area {
+            width: 353px;
+            height: 300px;
+            background: #f8f9fa;
+            border-radius: 18px;
+            margin: 0 auto 28px auto;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .map-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 18px;
+        }
+
+        .marker {
+            position: absolute;
+            width: 34px;
+            height: 40px;
+            background: transparent;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .marker img {
+            width: 34px;
+            height: 40px;
+            display: block;
+        }
+
+        /* 즐겨찾기 */
+        .fav-section {
+            margin-top: 18px;
+            margin-bottom: 18px;
+        }
+
+        .fav-title {
             font-size: 18px;
             font-weight: bold;
-            color: #96E072;
+            margin-bottom: 10px;
         }
 
-        .map-container {
-            width: 100%;
-            height: calc(100% - 130px);
-            background: #f5f5f5;
-            position: relative;
+        .fav-list {
+            border-top: 1px solid #eee;
+            padding-top: 10px;
         }
 
-        .location-marker {
-            width: 24px;
-            height: 24px;
-            background: #000;
-            border-radius: 50%;
-            position: absolute;
-            transform: translate(-50%, -50%);
-        }
-
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            width: 393px;
-            background: #E8FFD6;
-            padding: 12px 20px;
+        .fav-item {
             display: flex;
             justify-content: space-between;
-            border-radius: 25px 25px 0 0;
+            align-items: center;
+            padding: 14px 0;
+            font-size: 16px;
+            color: #222;
+            cursor: pointer;
+        }
+
+        .fav-item .chev {
+            color: #8BC34A;
+            font-size: 18px;
+        }
+
+        /* 플로팅 바 */
+        .bottom-nav {
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 18px;
+            width: 353px;
+            background: #c8f179;
+            border-radius: 30px;
+            padding: 12px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
         }
 
         .nav-item {
-            text-align: center;
-            color: #333;
-            text-decoration: none;
-            font-size: 11px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
+            font-size: 11px;
+            color: #111;
+            text-decoration: none;
         }
 
         .nav-icon {
             width: 28px;
             height: 28px;
-            background: #96E072;
-            border-radius: 50%;
-        }
-
-        .search-button {
-            position: fixed;
-            bottom: 100px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #E8FFD6;
-            color: #333;
-            padding: 12px 24px;
-            border-radius: 25px;
-            border: none;
-            font-size: 14px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
     </style>
 </head>
+
 <body>
     <div class="container">
-        <header class="header">
-            <div class="logo">
-                <div class="logo-icon"></div>
-                <div class="logo-text">DOINUT</div>
-            </div>
-        </header>
-
-        <div class="map-container">
-            <!-- 실제 지도 API 연동 필요 -->
-            <div class="location-marker" style="top: 30%; left: 40%;"></div>
-            <div class="location-marker" style="top: 45%; left: 60%;"></div>
-            <div class="location-marker" style="top: 55%; left: 35%;"></div>
+        <div class="header">
+            <div class="logo"><img src="../assets/img/Profile_img.png" alt="logo"></div>
+            <span class="brand">DO!NUT</span>
         </div>
-
-        <button class="search-button">줄겨찾기</button>
-
-        <nav class="bottom-nav">
-            <a href="#" class="nav-item">
-                <div class="nav-icon"></div>
-                <div>HOME</div>
-            </a>
-            <a href="#" class="nav-item">
-                <div class="nav-icon"></div>
-                <div>PROFILE</div>
-            </a>
-            <a href="#" class="nav-item">
-                <div class="nav-icon"></div>
-                <div>MAP</div>
-            </a>
-            <a href="#" class="nav-item">
-                <div class="nav-icon"></div>
-                <div>CHAT</div>
-            </a>
-        </nav>
+        <div class="school">미림마이스터고</div>
+        <div class="tabs">
+            <span class="tab active" onclick="showTab('all')">전체</span>
+            <span class="tab" onclick="showTab('gym')">체육관</span>
+            <span class="tab" onclick="showTab('cafeteria')">급식실</span>
+            <span class="tab">실습실</span>
+            <span class="tab">운동장</span>
+        </div>
+        <div class="map-area" id="mapArea">
+            <!-- 지도와 마커는 JS에서 동적으로 렌더링 -->
+        </div>
+        <div class="fav-section">
+            <div class="fav-title">즐겨찾기</div>
+            <div class="fav-list">
+                <div class="fav-item" onclick="showTab('gym')">체육관 <span class="chev">›</span></div>
+            </div>
+        </div>
     </div>
+    <nav class="bottom-nav" aria-label="main navigation">
+        <a class="nav-item" href="home.html">
+            <div class="nav-icon"><img src="../assets/img/Home_icon.png" alt="home" style="width:22px;height:22px;">
+            </div>
+            <div>HOME</div>
+        </a>
+        <a class="nav-item" href="myPage.html">
+            <div class="nav-icon"><img src="../assets/img/Profile_icon.png" alt="profile"
+                    style="width:22px;height:22px;"></div>
+            <div>PROFILE</div>
+        </a>
+        <a class="nav-item" href="map1.html">
+            <div class="nav-icon"><img src="../assets/img/Map_icon.png" alt="map" style="width:22px;height:22px;"></div>
+            <div>MAP</div>
+        </a>
+        <a class="nav-item" href="#" onclick="gotoNav('chat')">
+            <div class="nav-icon"><img src="../assets/img/Chap_icon.png" alt="chat" style="width:22px;height:22px;">
+            </div>
+            <div>CHAT</div>
+        </a>
+    </nav>
+    <script>
+        // 지도 이미지 경로
+        const mapImages = {
+            all: '../assets/img/지도.png',
+            gym: '../assets/img/빈지도.png',
+            cafeteria: '../assets/img/빈지도.png'
+        };
+        // 마커 정보 (top, left, label, type, img)
+        const markers = {
+            all: [
+                { top: 190, left: 120, label: '8', type: 'gym', img: '../assets/img/체육관마커.png' },
+                { top: 200, left: 60, label: '2', type: 'cafeteria', img: '../assets/img/급식실마커.png' }
+            ],
+            gym: [
+                { top: 190, left: 120, label: '8', type: 'gym', img: '../assets/img/체육관마커.png' }
+            ],
+            cafeteria: [
+                { top: 200, left: 60, label: '2', type: 'cafeteria', img: '../assets/img/급식실마커.png' }
+            ]
+        };
+
+        function showTab(tab) {
+            // 탭 활성화
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            if (tab === 'all') document.querySelectorAll('.tab')[0].classList.add('active');
+            if (tab === 'gym') document.querySelectorAll('.tab')[1].classList.add('active');
+            if (tab === 'cafeteria') document.querySelectorAll('.tab')[2].classList.add('active');
+
+            // 지도 이미지 및 마커 렌더링
+            const mapArea = document.getElementById('mapArea');
+            mapArea.innerHTML = `<img src="${mapImages[tab]}" alt="지도" class="map-img">`;
+            (markers[tab] || []).forEach(m => {
+                const marker = document.createElement('div');
+                marker.className = 'marker';
+                marker.style.top = m.top + 'px';
+                marker.style.left = m.left + 'px';
+                if (m.img) {
+                    const img = document.createElement('img');
+                    img.src = m.img;
+                    img.alt = m.label + '마커';
+                    marker.appendChild(img);
+                } else {
+                    marker.textContent = m.label;
+                }
+                if (m.type === 'gym') marker.onclick = () => showTab('gym');
+                if (m.type === 'cafeteria') marker.onclick = () => showTab('cafeteria');
+                mapArea.appendChild(marker);
+            });
+        }
+
+        // 최초 전체 탭 렌더링
+        document.addEventListener('DOMContentLoaded', () => {
+            showTab('all');
+        });
+
+        // 플로팅바 이동
+        document.querySelectorAll('.bottom-nav .nav-item').forEach((el, idx) => {
+            if (idx === 0) el.setAttribute('href', 'home.html');
+            if (idx === 1) el.setAttribute('href', 'myPage.html');
+            if (idx === 2) el.setAttribute('href', 'map1.html');
+            if (idx === 3) el.onclick = () => { window.location.href = 'chat.html'; };
+        });
+    </script>
 </body>
+
 </html>
