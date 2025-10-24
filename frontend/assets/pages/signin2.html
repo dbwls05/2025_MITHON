@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background-color: #fff;
+        }
+
+        .container {
+            width: 393px;
+            height: 852px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #fff;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .back-button {
+            font-size: 24px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        h1 {
+            font-size: 20px;
+            text-align: center;
+            flex-grow: 1;
+            margin-right: 24px; /* 뒤로가기 버튼 너비만큼 오프셋 */
+        }
+
+        .progress-bar {
+            height: 4px;
+            background-color: #eee;
+            margin-bottom: 40px;
+        }
+
+        .progress {
+            width: 33%;
+            height: 100%;
+            background-color: #2ecc71;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .dropdown {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 10px;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 9L0 0h12'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+        }
+
+        .next-button {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 40px);
+            max-width: 353px;
+            padding: 18px;
+            background-color: #000;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* 변경: 내부 a 태그 밑줄 제거 + 희색 텍스트 */
+        .next-button a {
+            color: #f0f0f0;         /* 희색 계열 텍스트 */
+            text-decoration: none;  /* 밑줄 제거 */
+            display: inline-block;
+            width: 100%;
+            height: 100%;
+            line-height: normal;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <span class="back-button">←</span>
+            <h1>회원가입</h1>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress"></div>
+        </div>
+
+        <div class="title">회원님의<br>기본 정보를 채워주세요.</div>
+        <p class="subtitle">나를 소개하는 정보를 입력하세요.</p>
+
+        <div class="form-group">
+            <label class="form-label">이름</label>
+            <input type="text" class="input-field" placeholder="이름을 입력해주세요.">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">학교</label>
+            <input type="text" class="input-field" placeholder="학교를 입력해주세요.">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">학년</label>
+            <select class="dropdown">
+                <option value="" disabled selected>학년을 선택해주세요.</option>
+                <option value="1">1학년</option>
+                <option value="2">2학년</option>
+                <option value="3">3학년</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">반</label>
+            <select class="dropdown">
+                <option value="" disabled selected>반을 선택해주세요.</option>
+                <option value="1">1반</option>
+                <option value="2">2반</option>
+                <option value="3">3반</option>
+            </select>
+        </div>
+
+        <button class="next-button"><a href="http://127.0.0.1:5500/frontend/assets/pages/siginIn3.html">다음</a></button>
+    </div>
+</body>
+</html>

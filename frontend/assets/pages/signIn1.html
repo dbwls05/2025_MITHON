@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        html,
+        body {
+            height: 100%;
+            background-color: #fff;
+        }
+
+        .container {
+            width: 393px;
+            height: 852px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #E8E8E8;
+            margin-bottom: 30px;
+        }
+
+        .progress-bar .progress {
+            width: 33%;
+            height: 100%;
+            background: #2ECC71;
+        }
+
+        h1 {
+            font-size: 24px;
+            text-align: left;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 40px;
+        }
+
+        .input-group {
+            margin-bottom: 30px;
+        }
+
+        .input-label {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .input-field+ .input-field {
+            margin-top: 8px;
+        }
+
+        .button-check {
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            padding: 16px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .hint-text {
+            font-size: 12px;
+            color: #888;
+            margin-top: 8px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .error-message {
+            color: #ff0000;
+            font-size: 12px;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .success-message {
+            color: #2ecc71;
+            font-size: 12px;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .submit-button {
+            width: 100%;
+            padding: 18px;
+            background-color: #000;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: 353px;
+        }
+
+        .submit-button a {
+            color: white;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>회원가입</h1>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress"></div>
+        </div>
+
+        <h1>아이디와 비밀번호를<br>생성 해주세요</h1>
+
+        <div class="input-group">
+            <label class="input-label">아이디</label>
+            <div class="input-row">
+                <input type="text" class="input-field" id="userId" placeholder="아이디를 입력해주세요.">
+                <button class="button-check" type="button" onclick="checkDuplicateId()">중복확인</button>
+            </div>
+            <p class="error-message" id="id-error">이미 아이디가 있습니다. 다른 아이디를 입력해 주세요.</p>
+            <p class="success-message" id="id-success">사용 가능합니다.</p>
+            <p class="hint-text">4-12자/영문 소문자 (숫자 포함)</p>
+        </div>
+
+        <div class="input-group">
+            <label class="input-label">비밀번호</label>
+            <input type="password" class="input-field" id="password"
+                placeholder="비밀번호를 입력해주세요." oninput="validatePassword()">
+            <p class="error-message" id="password-validation-error">비밀번호는 8-16자의 영문 대소문자, 숫자, 특수문자 중 2가지 이상을 조합해야 합니다.</p>
+            <input type="password" class="input-field" id="confirm-password"
+                placeholder="비밀번호를 다시 입력해주세요." oninput="checkPassword()">
+            <p class="error-message" id="password-error">비밀번호가 일치하지 않습니다.</p>
+            <p class="hint-text">8-16자/영문 대소문, 숫자, 특수, 숫자중 등 2가지 이상 조합</p>
+        </div>
+
+        <button class="submit-button"><a href="http://127.0.0.1:5500/frontend/assets/pages/signin2.html">다음</a></button>
+    </div>
+
+    <!-- DB.js 스크립트 추가 -->
+    <script src="../js/DB.js"></script>
+
+    <script>
+        // DB 인스턴스 생성
+        let db;
+        try {
+            db = new DB();
+        } catch (error) {
+            console.error('DB 초기화 실패:', error);
+        }
+
+        function validatePassword() {
+            const password = document.getElementById('password').value;
+            const validationError = document.getElementById('password-validation-error');
+
+            // 비밀번호 길이 체크
+            const isLengthValid = password.length >= 8 && password.length <= 16;
+
+            // 영문 대문자 체크
+            const hasUpperCase = /[A-Z]/.test(password);
+            // 영문 소문자 체크
+            const hasLowerCase = /[a-z]/.test(password);
+            // 숫자 체크
+            const hasNumber = /[0-9]/.test(password);
+            // 특수문자 체크
+            const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+            // 조합 개수 계산
+            const combinationCount = [hasUpperCase, hasLowerCase, hasNumber, hasSpecial]
+                .filter(condition => condition).length;
+
+            // 유효성 검사
+            if (!isLengthValid || combinationCount < 2) {
+                validationError.style.display = 'block';
+            } else {
+                validationError.style.display = 'none';
+            }
+        }
+
+        function checkPassword() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            const errorMessage = document.getElementById('password-error');
+
+            if (confirmPassword !== '') {
+                if (password !== confirmPassword) {
+                    errorMessage.style.display = 'block';
+                } else {
+                    errorMessage.style.display = 'none';
+                }
+            } else {
+                errorMessage.style.display = 'none';
+            }
+        }
+
+        // 중복 확인 함수
+        function checkDuplicateId() {
+            const userId = document.getElementById('userId').value;
+            const errorMessage = document.getElementById('id-error');
+            const successMessage = document.getElementById('id-success');
+
+            // 아이디 입력 확인
+            if (!userId) {
+                errorMessage.textContent = '아이디를 입력해주세요.';
+                errorMessage.style.display = 'block';
+                successMessage.style.display = 'none';
+                return;
+            }
+
+            // 아이디 형식 검사
+            const idPattern = /^[a-z0-9]{4,12}$/;
+            if (!idPattern.test(userId)) {
+                errorMessage.textContent = '아이디는 4-12자의 영문 소문자와 숫자만 사용 가능합니다.';
+                errorMessage.style.display = 'block';
+                successMessage.style.display = 'none';
+                return;
+            }
+
+            try {
+                // 중복 검사
+                if (db.checkDuplicateId(userId)) {
+                    errorMessage.textContent = '이미 아이디가 있습니다. 다른 아이디를 입력해 주세요.';
+                    errorMessage.style.display = 'block';
+                    successMessage.style.display = 'none';
+                } else {
+                    successMessage.textContent = '사용 가능합니다.';
+                    errorMessage.style.display = 'none';
+                    successMessage.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('중복 확인 중 오류 발생:', error);
+                errorMessage.textContent = '중복 확인 중 오류가 발생했습니다.';
+                errorMessage.style.display = 'block';
+                successMessage.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+
+</html>
