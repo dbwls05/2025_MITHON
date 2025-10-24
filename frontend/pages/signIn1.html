@@ -177,7 +177,7 @@
             <p class="hint-text">8-16자/영문 대소문, 숫자, 특수, 숫자중 등 2가지 이상 조합</p>
         </div>
 
-        <button class="submit-button"><a href="http://127.0.0.1:5500/frontend/assets/pages/signin2.html">다음</a></button>
+        <button class="submit-button"><a href="signin2.html">다음</a></button>
     </div>
 
     <!-- DB.js 스크립트 추가 -->
@@ -237,7 +237,7 @@
         }
 
         // 중복 확인 함수
-        function checkDuplicateId() {
+        async function checkDuplicateId() {
             const userId = document.getElementById('userId').value;
             const errorMessage = document.getElementById('id-error');
             const successMessage = document.getElementById('id-success');
@@ -260,8 +260,15 @@
             }
 
             try {
+                // DB 인스턴스가 있는지 확인
+                if (!db) {
+                    throw new Error('DB가 초기화되지 않았습니다.');
+                }
+
                 // 중복 검사
-                if (db.checkDuplicateId(userId)) {
+                const isDuplicate = db.checkDuplicateId(userId);
+                
+                if (isDuplicate) {
                     errorMessage.textContent = '이미 아이디가 있습니다. 다른 아이디를 입력해 주세요.';
                     errorMessage.style.display = 'block';
                     successMessage.style.display = 'none';
@@ -269,10 +276,13 @@
                     successMessage.textContent = '사용 가능합니다.';
                     errorMessage.style.display = 'none';
                     successMessage.style.display = 'block';
+                    
+                    // 성공한 아이디를 localStorage에 임시 저장
+                    localStorage.setItem('tempUserId', userId);
                 }
             } catch (error) {
                 console.error('중복 확인 중 오류 발생:', error);
-                errorMessage.textContent = '중복 확인 중 오류가 발생했습니다.';
+                errorMessage.textContent = '중복 확인 중 오류가 발생했습니다. 다시 시도해주세요.';
                 errorMessage.style.display = 'block';
                 successMessage.style.display = 'none';
             }
