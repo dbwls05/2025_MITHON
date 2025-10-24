@@ -1,180 +1,275 @@
-<!--signln2.html-->
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>회원가입</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        }
-
-        body {
-            background-color: #fff;
-        }
-
-        .container {
-            width: 393px;
-            height: 852px;
-            margin: 0 auto;
-            padding: 20px;
-            background: #fff;
-        }
-
-        .header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .back-button {
-            font-size: 24px;
-            margin-right: 10px;
-            cursor: pointer;
-        }
-
-        h1 {
-            font-size: 20px;
-            text-align: center;
-            flex-grow: 1;
-            margin-right: 24px; /* 뒤로가기 버튼 너비만큼 오프셋 */
-        }
-
-        .progress-bar {
-            height: 4px;
-            background-color: #eee;
-            margin-bottom: 40px;
-        }
-
-        .progress {
-            width: 33%;
-            height: 100%;
-            background-color: #2ecc71;
-        }
-
-        .title {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .subtitle {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 40px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 16px;
-            margin-bottom: 10px;
-        }
-
-        .input-field {
-            width: 100%;
-            padding: 15px;
-            border: none;
-            background-color: #f5f5f5;
-            border-radius: 8px;
-            font-size: 16px;
-            margin-bottom: 10px;
-        }
-
-        .dropdown {
-            width: 100%;
-            padding: 15px;
-            border: none;
-            background-color: #f5f5f5;
-            border-radius: 8px;
-            font-size: 16px;
-            margin-bottom: 10px;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 9L0 0h12'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 15px center;
-        }
-
-        .next-button {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 40px);
-            max-width: 353px;
-            padding: 18px;
-            background-color: #000;
-            color: white;
-            border: none;
-            border-radius: 25px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        /* 변경: 내부 a 태그 밑줄 제거 + 희색 텍스트 */
-        .next-button a {
-            color: #f0f0f0;         /* 희색 계열 텍스트 */
-            text-decoration: none;  /* 밑줄 제거 */
-            display: inline-block;
-            width: 100%;
-            height: 100%;
-            line-height: normal;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>회원가입</title>
+<style>
+/* 기존 스타일 유지 */
+* { margin:0; padding:0; box-sizing:border-box; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; }
+body { background-color:#fff; }
+.container { width:393px; margin:0 auto; padding:20px; }
+.header { display:flex; align-items:center; margin-bottom:30px; }
+.back-button { font-size:24px; margin-right:10px; cursor:pointer; }
+h1 { font-size:20px; text-align:center; flex-grow:1; margin-right:24px; }
+.progress-bar { height:4px; background-color:#eee; margin-bottom:40px; }
+.progress { width:33%; height:100%; background-color:#2ecc71; }
+.title { font-size:24px; font-weight:bold; margin-bottom:10px; }
+.subtitle { color:#666; font-size:14px; margin-bottom:40px; }
+.form-group { margin-bottom:20px; }
+.form-label { display:block; font-size:16px; margin-bottom:10px; }
+.input-field, .dropdown {
+  width:100%; padding:15px; border:none;
+  background-color:#f5f5f5; border-radius:8px; font-size:16px; margin-bottom:10px;
+}
+.dropdown { appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 9L0 0h12'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 15px center; }
+.school-list { max-height:150px; overflow-y:auto; margin-top:5px; }
+.school-item { display:flex; justify-content:space-between; margin-bottom:5px; background:#f0f0f0; padding:8px; border-radius:5px; }
+.school-item button { /* 선택 버튼 스타일 추가 */
+    padding: 4px 8px;
+    border: none;
+    background: #2ecc71;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.next-button {
+  position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+  width:calc(100% - 40px); max-width:353px; padding:18px;
+  background-color:#000; color:white; border:none; border-radius:25px; font-size:16px; cursor:pointer;
+}
+.next-button a { color:#f0f0f0; text-decoration:none; display:inline-block; width:100%; height:100%; line-height:normal; }
+.error-message { color: red; font-size: 14px; margin-top: 5px; display: none; }
+</style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <span class="back-button">←</span>
-            <h1>회원가입</h1>
-        </div>
-        
-        <div class="progress-bar">
-            <div class="progress"></div>
-        </div>
+<div class="container">
+  <div class="header">
+    <span class="back-button" onclick="history.back()">←</span>
+    <h1>회원가입</h1>
+  </div>
 
-        <div class="title">회원님의<br>기본 정보를 채워주세요.</div>
-        <p class="subtitle">나를 소개하는 정보를 입력하세요.</p>
+  <div class="progress-bar"><div class="progress" style="width: 66%;"></div></div> 
+  <div class="title">회원님의<br>기본 정보를 채워주세요.</div>
+  <p class="subtitle">나를 소개하는 정보를 입력하세요.</p>
 
-        <div class="form-group">
-            <label class="form-label">이름</label>
-            <input type="text" class="input-field" placeholder="이름을 입력해주세요.">
-        </div>
+  <div class="form-group">
+    <label class="form-label">이름</label>
+    <input type="text" id="userName" class="input-field" placeholder="이름을 입력해주세요.">
+  </div>
 
-        <div class="form-group">
-            <label class="form-label">학교</label>
-            <input type="text" class="input-field" placeholder="학교를 입력해주세요.">
-        </div>
+  <div class="form-group">
+    <label class="form-label">학교</label>
+    <input type="text" id="schoolName" class="input-field" placeholder="학교를 입력해주세요." oninput="searchSchoolsDebounced()">
+    <div id="schoolResults" class="school-list"></div>
+    <input type="hidden" id="selectedSchoolId" value="">
+    <input type="hidden" id="selectedSchoolExternalId" value="">
+    <input type="hidden" id="selectedSchoolName" value="">
+    <div class="error-message" id="schoolError">학교를 검색하여 선택해주세요.</div>
+  </div>
 
-        <div class="form-group">
-            <label class="form-label">학년</label>
-            <select class="dropdown">
-                <option value="" disabled selected>학년을 선택해주세요.</option>
-                <option value="1">1학년</option>
-                <option value="2">2학년</option>
-                <option value="3">3학년</option>
-            </select>
-        </div>
+  <div class="form-group">
+    <label class="form-label">학년</label>
+    <select id="grade" class="dropdown">
+      <option value="" disabled selected>학년을 선택해주세요.</option>
+      <option value="1">1학년</option>
+      <option value="2">2학년</option>
+      <option value="3">3학년</option>
+    </select>
+  </div>
 
-        <div class="form-group">
-            <label class="form-label">반</label>
-            <select class="dropdown">
-                <option value="" disabled selected>반을 선택해주세요.</option>
-                <option value="1">1반</option>
-                <option value="2">2반</option>
-                <option value="3">3반</option>
-            </select>
-        </div>
+  <div class="form-group">
+    <label class="form-label">반</label>
+    <select id="classNum" class="dropdown">
+      <option value="" disabled selected>반을 선택해주세요.</option>
+      <script>
+        for (let i = 1; i <= 15; i++) { // 일반적으로 1반부터 15반 정도까지
+            document.write(`<option value="${i}">${i}반</option>`);
+        }
+      </script>
+    </select>
+  </div>
 
-        <button class="next-button"><a href="siginIn3.html">다음</a></button>
-    </div>
+  <button class="next-button" onclick="registerUser()">다음</button>
+</div>
+<script>
+let selectedSchool = null;
+let searchTimeout = null;
+
+// 학교 검색 디바운스
+function searchSchoolsDebounced() {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    const query = document.getElementById('schoolName').value.trim();
+    const container = document.getElementById('schoolResults');
+    
+    // 검색어가 없으면 결과 목록 초기화
+    if (!query) {
+      container.innerHTML = '';
+      return; 
+    }
+    searchSchools(query);
+  }, 400);
+}
+
+// 학교 검색 API 호출
+async function searchSchools(query) {
+  const container = document.getElementById('schoolResults');
+  container.innerHTML = '<div style="padding: 8px; color: #666;">검색 중...</div>';
+
+  try {
+    const res = await fetch(`http://localhost:8080/api/schools/search?name=${encodeURIComponent(query)}`);
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    const data = await res.json();
+
+    container.innerHTML = '';
+    document.getElementById('schoolError').style.display = 'none';
+
+    if (data.success && data.data.length > 0) {
+      data.data.forEach(s => {
+        const div = document.createElement('div');
+        div.className = 'school-item';
+        div.innerHTML = `<span>${s.schoolName} (${s.officeName})</span>`;
+        const btn = document.createElement('button');
+        btn.textContent = '선택';
+        btn.onclick = (e) => {
+            e.stopPropagation(); // 버튼 클릭 시 폼 제출 방지
+            selectSchool(s);
+        };
+        div.appendChild(btn);
+        container.appendChild(div);
+      });
+    } else {
+      container.textContent = '검색 결과가 없습니다.';
+    }
+
+  } catch (err) {
+    console.error('학교 검색 에러:', err);
+    container.textContent = '학교 검색 중 오류 발생. 서버를 확인하세요.';
+  }
+}
+
+// 학교 선택 및 DB 등록/조회
+async function selectSchool(s) {
+  const sCode = s.schoolCode;
+  const sName = s.schoolName;
+  
+  // 1. 입력 필드 업데이트 및 결과 숨김
+  document.getElementById('schoolName').value = sName;
+  document.getElementById('schoolResults').innerHTML = '';
+
+  try {
+    // 2. 기존 DB 조회
+    const lookupRes = await fetch(`http://localhost:8080/api/schools?externalId=${encodeURIComponent(sCode)}`);
+    const lookup = await lookupRes.json();
+
+    if (lookup.success && lookup.data && lookup.data.id) {
+      // 3. 기존 학교가 있는 경우
+      selectedSchool = { id: lookup.data.id, name: sName, externalId: sCode };
+      document.getElementById('selectedSchoolId').value = lookup.data.id;
+      document.getElementById('selectedSchoolExternalId').value = sCode;
+      document.getElementById('selectedSchoolName').value = sName;
+      // alert(`${sName} 선택 완료! (기존 DB ID: ${lookup.data.id})`);
+    } else {
+      // 4. 신규 등록 요청
+      const createRes = await fetch('http://localhost:8080/api/schools', {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({ name: sName, externalId: sCode })
+      });
+      
+      const createData = await createRes.json();
+      
+      if (createData.success && createData.data && createData.data.id) {
+        // 5. 신규 등록 성공
+        selectedSchool = { id: createData.data.id, name: sName, externalId: sCode };
+        document.getElementById('selectedSchoolId').value = createData.data.id;
+        document.getElementById('selectedSchoolExternalId').value = sCode;
+        document.getElementById('selectedSchoolName').value = sName;
+        // alert(`${sName} 선택 및 등록 완료! (신규 DB ID: ${createData.data.id})`);
+      } else {
+        // 6. 신규 등록 실패 (서버 오류)
+        const errorMsg = createData.details || createData.error || '알 수 없는 서버 오류';
+        selectedSchool = null;
+        document.getElementById('selectedSchoolId').value = '';
+        alert(`학교 등록 실패: ${errorMsg}`);
+      }
+    }
+  } catch (err) {
+    console.error('학교 선택 및 등록 중 에러:', err);
+    alert('학교 처리 중 치명적인 오류 발생');
+    selectedSchool = null;
+    document.getElementById('selectedSchoolId').value = '';
+  }
+}
+
+// 다음 단계 (회원가입 요청)
+async function registerUser() {
+    // 1. 유효성 검사
+    const name = document.getElementById('userName').value.trim();
+    const schoolId = document.getElementById('selectedSchoolId').value;
+    const grade = document.getElementById('grade').value;
+    const classNum = document.getElementById('classNum').value;
+
+    if (!name) return alert('이름을 입력해주세요.');
+    if (!schoolId) {
+      document.getElementById('schoolError').style.display = 'block';
+      return alert('학교를 선택해주세요.');
+    }
+    if (!grade) return alert('학년을 선택해주세요.');
+    if (!classNum) return alert('반을 선택해주세요.');
+
+    // 2. 이전 단계에서 저장된 로그인 정보 가져오기 (index.html에서 넘어온 정보)
+    const loginDataStr = sessionStorage.getItem('signupLoginData');
+    if (!loginDataStr) {
+        alert('이전 단계 정보가 누락되었습니다.');
+        window.location.href = 'index.html'; // 이전 단계로 강제 이동
+        return;
+    }
+    const loginData = JSON.parse(loginDataStr);
+    
+    // 3. 전체 회원가입 데이터 준비 (comment, profilePhoto는 다음 단계에서 설정되므로 기본값)
+    const userData = {
+        idname: loginData.idname,
+        password: loginData.password,
+        name: name,
+        schoolId: schoolId,
+        grade: parseInt(grade),
+        classNum: parseInt(classNum),
+        comment: '',
+        profilePhoto: ''
+    };
+    
+    // 4. 회원가입 데이터 세션에 저장 (다음 단계로 이동)
+    sessionStorage.setItem('signupBasicData', JSON.stringify(userData));
+    window.location.href = 'signup3.html'; // 다음 단계 페이지로 이동
+
+    // 참고: 실제 서버에 등록하는 최종 로직은 signup3.html에서 처리하는 것이 일반적입니다.
+    // 만약 이 페이지에서 바로 등록하려면 아래 fetch를 사용하세요.
+    /*
+    try {
+        const res = await fetch('http://localhost:8080/api/users/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userData)
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            alert('회원가입 성공! 마지막 단계로 이동합니다.');
+            // 회원가입 성공 시 사용자 ID를 저장하고 다음 단계로 이동
+            userData.userId = data.userId;
+            sessionStorage.setItem('currentUser', JSON.stringify(userData));
+            window.location.href = 'signup3.html'; 
+        } else {
+            alert(`회원가입 실패: ${data.error || '알 수 없는 오류'}`);
+        }
+    } catch (error) {
+        console.error('회원가입 요청 오류:', error);
+        alert('서버 연결 오류로 회원가입에 실패했습니다.');
+    }
+    */
+}
+</script>
 </body>
 </html>

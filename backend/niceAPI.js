@@ -32,14 +32,12 @@ async function searchSchools(schoolName, pageIndex = 1, pageSize = 100) {
         }
 
         return data[1].row.map(school => ({
-            schoolCode: school.SD_SCHUL_CODE,
-            schoolName: school.SCHUL_NM,
-            officeCode: school.ATPT_OFCDC_SC_CODE,
-            officeName: school.ATPT_OFCDC_SC_NM,
-            schoolType: school.SCHUL_KND_SC_NM,
-            address: school.ORG_RDNMA,
-            foundDate: school.FOND_YMD,
-            zipCode: school.ORG_RDNZC
+            schoolName: school.SCHUL_NM, // 학교명
+            schoolCode: school.SD_SCHUL_CODE, // 학교 코드
+            officeCode: school.ATPT_OFCDC_SC_CODE, // 교육청 코드
+            officeName: school.ATPT_OFCDC_SC_NM, // 교육청명
+            // 학교 코드와 교육청 코드를 조합하여 고유한 External ID를 생성합니다.
+            externalId: `${school.ATPT_OFCDC_SC_CODE}_${school.SD_SCHUL_CODE}`
         }));
 
     } catch (error) {
@@ -79,14 +77,10 @@ async function getSchoolDetail(officeCode, schoolCode) {
             schoolType: school.SCHUL_KND_SC_NM,
             address: school.ORG_RDNMA,
             zipCode: school.ORG_RDNZC,
-            phone: school.ORG_TELNO,
-            website: school.HMPG_ADRES,
-            foundDate: school.FOND_YMD,
-            schoolAnniversary: school.FOAS_MEMRD
+            externalId: `${school.ATPT_OFCDC_SC_CODE}_${school.SD_SCHUL_CODE}`
         };
-
     } catch (error) {
-        throw new Error(`학교 상세 정보 조회 오류: ${error.message}`);
+        throw new Error(`학교 상세 조회 오류: ${error.message}`);
     }
 }
 
