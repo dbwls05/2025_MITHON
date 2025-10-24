@@ -13,71 +13,84 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
 
-        html, body {
-    height: 100%;
-    overflow: hidden; /* 스크롤 막기 */
-}
+        html,
+        body {
+            height: 100%;
+            overflow: hidden;
+        }
 
         body {
-            background-color: #fff;
+            background-color: #f8f9fa;
             padding: 20px;
         }
 
         .container {
             max-width: 430px;
             margin: 0 auto;
-        }
-
-        .header {
-            position: relative;
-            margin-bottom: 40px;
-        }
-
-        .badge {
-            position: absolute;
-            top: 0;
-            right: 0;
-            background-color: #2ECC71;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
-            text-align: center;
             font-size: 24px;
-            margin: 20px 0;
+            margin-bottom: 30px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 30px;
         }
 
         .input-group {
-            margin-bottom: 40px;
+            margin-bottom: 25px;
         }
 
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
+        .input-label {
             font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
         }
 
         .input-field {
             width: 100%;
-            padding: 12px;
+            padding: 15px;
             border: none;
             background-color: #f5f5f5;
             border-radius: 8px;
             font-size: 14px;
+            margin-bottom: 10px;
         }
 
         .button-check {
-            background-color: #2ECC71;
+            background-color: #2ecc71;
             color: white;
             border: none;
-            padding: 12px 20px;
+            padding: 15px 25px;
             border-radius: 8px;
             cursor: pointer;
             white-space: nowrap;
-            min-width: fit-content;
+        }
+
+        .submit-button {
+            width: 100%;
+            padding: 18px;
+            background-color: #000;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 40px;
+        }
+
+        .hint-text {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
         }
 
         .input-row {
@@ -85,40 +98,10 @@
             gap: 10px;
         }
 
-        .hint-text {
-            font-size: 12px;
-            color: #666;
-            margin-top: 4px;
-        }
-
-        .submit-button {
-            width: 100%;
-            padding: 15px;
-            background-color: #000;
-            color: white;
-            border: none;
-            border-radius: 25px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 90px;
-            margin-bottom: 40px;
-        }
-
-        .email-input {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .at-symbol {
-            color: #666;
-            font-size: 14px;
-        }
-
         .error-message {
             color: #ff0000;
             font-size: 12px;
-            margin-top: 4px;
+            margin-top: 5px;
             display: none;
         }
     </style>
@@ -126,41 +109,61 @@
 
 <body>
     <div class="container">
-        <div class="header">
-            <h1>회원가입</h1>
-        </div>
+        <h1>회원가입</h1>
+        <p class="subtitle"></p>
 
         <div class="input-group">
-            <label>아이디</label>
+            <label class="input-label">아이디</label>
             <div class="input-row">
-                <input type="text" class="input-field" placeholder="아이디">
+                <input type="text" class="input-field" placeholder="아이디를 입력해주세요.">
                 <button class="button-check">중복확인</button>
             </div>
             <p class="hint-text">4-12자/영문 소문자 (숫자 포함)</p>
         </div>
 
         <div class="input-group">
-            <label>비밀번호</label>
-            <input type="password" class="input-field" id="password" placeholder="비밀번호">
-            <input type="password" class="input-field" id="confirm-password" style="margin-top: 10px;" placeholder="비밀번호 확인"
-                oninput="checkPassword()">
+            <label class="input-label">비밀번호</label>
+            <input type="password" class="input-field" id="password"
+                placeholder="비밀번호를 입력해주세요." oninput="validatePassword()">
+            <p class="error-message" id="password-validation-error">비밀번호는 8-16자의 영문 대소문자, 숫자, 특수문자 중 2가지 이상을 조합해야 합니다.</p>
+            <input type="password" class="input-field" id="confirm-password"
+                placeholder="비밀번호를 다시 입력해주세요." oninput="checkPassword()">
             <p class="error-message" id="password-error">비밀번호가 일치하지 않습니다.</p>
             <p class="hint-text">8-16자/영문 대소문, 숫자, 특수, 숫자중 등 2가지 이상 조합</p>
         </div>
 
-        <div class="input-group">
-            <label>이메일</label>
-            <div class="email-input">
-                <input type="text" class="input-field" placeholder="이메일">
-                <span class="at-symbol">@</span>
-                <input type="text" class="input-field" placeholder="선택">
-            </div>
-        </div>
-
-        <button class="submit-button">가입하기</button>
+        <button class="submit-button">다음</button>
     </div>
 
     <script>
+        function validatePassword() {
+            const password = document.getElementById('password').value;
+            const validationError = document.getElementById('password-validation-error');
+
+            // 비밀번호 길이 체크
+            const isLengthValid = password.length >= 8 && password.length <= 16;
+
+            // 영문 대문자 체크
+            const hasUpperCase = /[A-Z]/.test(password);
+            // 영문 소문자 체크
+            const hasLowerCase = /[a-z]/.test(password);
+            // 숫자 체크
+            const hasNumber = /[0-9]/.test(password);
+            // 특수문자 체크
+            const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+            // 조합 개수 계산
+            const combinationCount = [hasUpperCase, hasLowerCase, hasNumber, hasSpecial]
+                .filter(condition => condition).length;
+
+            // 유효성 검사
+            if (!isLengthValid || combinationCount < 2) {
+                validationError.style.display = 'block';
+            } else {
+                validationError.style.display = 'none';
+            }
+        }
+
         function checkPassword() {
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirm-password').value;
