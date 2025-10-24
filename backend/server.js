@@ -4,6 +4,7 @@ const db =
 require('./DB');
 const niceAPI = require('./niceAPI');
 
+
 const app = express();
 const PORT = 8080;
 
@@ -182,6 +183,58 @@ app.get('/api/maps', async (_, res) => {
     res.status(500).json({ error: '맵 목록 조회 실패' });
   }
 });
+
+// 전체 키워드 조회
+app.get('/api/keywords', async (_, res) => {
+    try {
+        const keywords = await db.getAllKeywords();
+        res.json({ success: true, data: keywords });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+/// 사용자 키워드 조회
+app.get('/api/users/:userId/keywords', async (req, res) => {
+    try {
+        const keywords = await db.getUserKeywordsSafe(req.params.userId);
+        res.json({ success: true, data: keywords });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: '사용자 키워드 조회 실패', details: err.message });
+    }
+});
+
+// 사용자 키워드 설정
+app.post('/api/users/:userId/keywords', async (req, res) => {
+    try {
+        const { keywordIds } = req.body;
+        await db.setUserKeywordsSafe(req.params.userId, keywordIds || []);
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: '사용자 키워드 설정 실패', details: err.message });
+    }
+});
+
+
+// 서버 코드 (server.js)
+app.get('/api/users/idname/:idname', async (req, res) => {
+    const { idname } = req.params;
+
+    try {
+        // 여기서 DB 함수 호출
+        const user = await db.getUserByIdname(idname);
+
+        if (!user) return res.json({ success: false, error: '사용자 없음' });
+
+        res.json({ success: true, user });
+    } catch (err) {
+        res.json({ success: false, error: err.message });
+    }
+});
+
+
 
 // ============================
 // 서버 시작

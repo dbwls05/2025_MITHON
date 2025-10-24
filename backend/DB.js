@@ -216,11 +216,53 @@ async function deleteMapComment(commentId) {
     return result.affectedRows > 0;
 }
 
-// ============================================
-// Export
-// ============================================
+// 전체 키워드 조회
+// 전체 키워드 조회
+async function getAllKeywords() {
+    const [rows] = await pool.query('SELECT * FROM KEYWORD');
+    return rows;
+}
+
+// 기존 setUserKeywords, getUserKeywords 중복 제거 후 수정
+// ============================
+// USER-KEYWORD 관련
+// ============================
+
+// 특정 사용자 키워드 조회
+async function getUserKeywordsSafe(userId) {
+    const [rows] = await pool.query(
+        'SELECT k.* FROM KEYWORD_USER ku JOIN KEYWORD k ON ku.word_id = k.id WHERE ku.user_id = ?',
+        [userId]
+    );
+    return rows;
+}
+
+// 사용자 키워드 설정
+async function setUserKeywordsSafe(userId, keywordIds = []) {
+    await pool.query('DELETE FROM KEYWORD_USER WHERE user_id = ?', [userId]);
+    if (keywordIds.length > 0) {
+        // MySQL2에서는 bulk insert 위해 `(?, ?), (?, ?), ...` 형태로 만들어야 함
+        const values = [];
+        const placeholders = [];
+        keywordIds.forEach(id => {
+            placeholders.push('(?, ?)');
+            values.push(userId, id);
+        });
+        await pool.query(`INSERT INTO KEYWORD_USER (user_id, word_id) VALUES ${placeholders.join(',')}`, values);
+    }
+    return true;
+}
+
+// Export에 추가
+module.exports.getUserKeywordsSafe = getUserKeywordsSafe;
+module.exports.setUserKeywordsSafe = setUserKeywordsSafe;
+
 module.exports = {
     pool,
+    getAllKeywords,
+    // getUserKeywords,    <-- 이 줄 삭제
+    getUserKeywordsSafe,   // Safe 버전으로 교체
+    setUserKeywordsSafe,   // Safe 버전으로 교체
     // School
     addSchool,
     findSchoolByName,
@@ -240,5 +282,5 @@ module.exports = {
     addMapComment,
     getCommentsByMap,
     getCommentsByUser,
-    deleteMapComment
+    deleteMapComment,
 };
