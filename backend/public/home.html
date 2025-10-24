@@ -2,84 +2,318 @@
 
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DOINUT - 홈</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif; }
-        body { background:#fff; }
-        .frame { width:393px; height:852px; margin:0 auto; padding:20px 18px 92px; position:relative; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
+        }
+
+        body {
+            background: #fff;
+        }
+
+        .frame {
+            width: 393px;
+            height: 852px;
+            margin: 0 auto;
+            padding: 20px 18px 92px;
+            position: relative;
+        }
 
         /* header */
-        .top { display:flex; align-items:center; gap:10px; margin-bottom:18px; }
-        .logo-img { width:36px; height:36px; border-radius:50%; background:#e6f9d9; display:flex; align-items:center; justify-content:center; overflow:hidden; }
-        .logo-img img{ width:100%; height:100%; object-fit:cover; display:block; }
-        .brand { color:#9ff24a; font-weight:800; font-size:18px; letter-spacing:0.5px; }
+        .top {
+            display: inline-block;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .logo-img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #e6f9d9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .logo-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .brand {
+            color: #9ff24a;
+            font-weight: 800;
+            font-size: 18px;
+            letter-spacing: 0.5px;
+        }
 
         /* 학교명 */
-        .school { font-size:18px; font-weight:700; color:#111; margin:6px 0 16px; }
+        .school {
+            font-size: 18px;
+            font-weight: 700;
+            color: #111;
+            margin: 6px 0 16px;
+        }
 
         /* write card */
-        .write-card { background:#cfff7a; border-radius:12px; padding:12px 16px; display:flex; gap:12px; align-items:center; box-shadow:0 0 0 1px rgba(0,0,0,0.02) inset; }
-        .write-avatar { width:46px; height:46px; border-radius:50%; overflow:hidden; background:#fff; display:flex; align-items:center; justify-content:center; }
-        .write-avatar img{ width:100%; height:100%; object-fit:cover; }
-        .write-text { flex:1; }
-        .write-small { font-size:12px; color:#2b2b2b; opacity:0.7; margin-bottom:4px; }
-        .write-big { font-size:16px; font-weight:700; color:#111; }
-        .write-arrow { width:22px; height:22px; color:#111; }
+        .write-card {
+            background: #cfff7a;
+            border-radius: 12px;
+            padding: 12px 16px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.02) inset;
+        }
+
+        .write-avatar {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .write-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .write-text {
+            flex: 1;
+        }
+
+        .write-small {
+            font-size: 12px;
+            color: #2b2b2b;
+            opacity: 0.7;
+            margin-bottom: 4px;
+        }
+
+        .write-big {
+            font-size: 16px;
+            font-weight: 700;
+            color: #111;
+        }
+
+        .write-arrow {
+            width: 22px;
+            height: 22px;
+            color: #111;
+        }
 
         /* section title */
-        .section-title { margin:18px 0 12px; font-weight:700; font-size:16px; color:#111; display:flex; align-items:center; gap:8px; }
+        .section-title {
+            margin: 18px 0 12px;
+            font-weight: 700;
+            font-size: 16px;
+            color: #111;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
         /* post card */
-        .post-wrap { padding:0 2px; }
-        .dots { display:flex; gap:6px; margin-bottom:8px; }
-        .dot { width:8px; height:8px; background:#9ff24a; border-radius:50%; box-shadow:0 0 0 3px rgba(0,0,0,0.02) inset; }
-        .post-card { background:#fff; border-radius:10px; border:1px solid #eee; overflow:hidden; }
-        .post-top { display:flex; align-items:center; gap:10px; padding:12px; }
-        .post-avatar { width:28px; height:28px; border-radius:50%; overflow:hidden; background:#fff; }
-        .post-avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
-        .post-meta { font-size:13px; color:#555; display:flex; gap:8px; align-items:center; }
-        .post-body { padding:8px 12px 16px; color:#222; line-height:1.5; font-size:14px; }
-        .post-stats { display:flex; gap:18px; padding:10px 12px; border-top:1px solid #f0f0f0; color:#7a7a7a; font-size:13px; align-items:center; }
+        .post-wrap {
+            padding: 0 2px;
+        }
 
-        .icon-heart, .icon-chat { width:18px; height:18px; display:inline-block; vertical-align:middle; margin-right:8px; }
+        .dots {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: #9ff24a;
+            border-radius: 50%;
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.02) inset;
+        }
+
+        .post-card {
+            background: #fff;
+            border-radius: 10px;
+            border: 1px solid #eee;
+            overflow: hidden;
+        }
+
+        .post-top {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+        }
+
+        .post-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .post-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .post-meta {
+            font-size: 13px;
+            color: #555;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .post-body {
+            padding: 8px 12px 16px;
+            color: #222;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+
+        .post-stats {
+            display: flex;
+            gap: 18px;
+            padding: 10px 12px;
+            border-top: 1px solid #f0f0f0;
+            color: #7a7a7a;
+            font-size: 13px;
+            align-items: center;
+        }
+
+        .icon-heart,
+        .icon-chat {
+            width: 18px;
+            height: 18px;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
 
         /* friends */
-        .friends { margin:18px 0 70px; }
-        .friends-title { font-size:16px; font-weight:700; margin-bottom:12px; }
-        .friends-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px 6px; justify-items:center; align-items:start; }
-        .friend { text-align:center; font-size:12px; color:#333; }
-        .friend .pic { width:64px; height:64px; border-radius:50%; overflow:hidden; background:#fff; margin-bottom:6px; box-shadow:0 4px 8px rgba(0,0,0,0.03); }
-        .friend .pic img { width:100%; height:100%; object-fit:cover; display:block; }
+        .friends {
+            margin: 18px 0 70px;
+        }
+
+        .friends-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .friends-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px 6px;
+            justify-items: center;
+            align-items: start;
+        }
+
+        .friend {
+            text-align: center;
+            font-size: 12px;
+            color: #333;
+        }
+
+        .friend .pic {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: #fff;
+            margin-bottom: 6px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.03);
+        }
+
+        .friend .pic img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
 
         /* bottom nav */
-        .bottom-nav { position:fixed; left:50%; transform:translateX(-50%); bottom:16px; width:338px; height:68px; background:#cfff7a; border-radius:34px; display:flex; align-items:center; justify-content:space-around; box-shadow:0 6px 18px rgba(0,0,0,0.08); }
-        .nav-item { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; color:#111; text-decoration:none; font-size:11px; width:64px; }
-        .nav-icon { width:22px; height:22px; display:block; }
+        .bottom-nav {
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 16px;
+            width: 338px;
+            height: 68px;
+            background: #cfff7a;
+            border-radius: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            color: #111;
+            text-decoration: none;
+            font-size: 11px;
+            width: 64px;
+        }
+
+        .nav-icon {
+            width: 22px;
+            height: 22px;
+            display: block;
+        }
 
         /* utility */
-        .chev { width:14px; height:14px; display:inline-block; }
+        .chev {
+            width: 14px;
+            height: 14px;
+            display: inline-block;
+        }
     </style>
 </head>
+
 <body>
     <div class="frame">
         <div class="top">
             <div class="logo-img">
                 <img src="../assets/img/Profile_img.png" alt="donut" />
             </div>
-<<<<<<< HEAD:frontend/pages/home.html
-            <div class="brand">DO!NUT</div>
-=======
-            <h2 class="profile-name">조은지 ></h2>
-            <p class="profile-desc">저 개발을 잘하죠...</p>
-            <p class="profile-time">1년전 6일</p>
-            <div class="tags">
-                <span class="tag">#오늘급식</span>
-                <span class="tag">#수행평가</span>
-                <span class="tag">#시험공부</span>
-            </div>
+            <<<<<<< HEAD:frontend/pages/home.html <div class="brand">DO!NUT
+        </div>
+        =======
+        <h2 class="profile-name">조은지 ></h2>
+        <p class="profile-desc">저 개발을 잘하죠...</p>
+        <p class="profile-time">1년전 6일</p>
+        <div class="tags">
+            <span class="tag">#오늘급식</span>
+            <span class="tag">#수행평가</span>
+            <span class="tag">#시험공부</span>
+        </div>
         </section>
 
         <div class="menu-list">
@@ -87,7 +321,7 @@
             <a href="#" class="menu-item">고객센터 <span>></span></a>
             <a href="#" class="menu-item">설정 <span>></span></a>
             <a href="index.html" class="menu-item">로그아웃 <span>></span></a>
->>>>>>> 17c07957f18ef61cae4709bda6fbb24ace085669:backend/public/home.html
+            >>>>>>> 17c07957f18ef61cae4709bda6fbb24ace085669:backend/public/home.html
         </div>
 
         <div class="school">미림마이스터고</div>
@@ -100,7 +334,9 @@
                 <div class="write-small">오늘 무슨 일이 있었나요?</div>
                 <div class="write-big">글 쓰러가기</div>
             </div>
-            <svg class="write-arrow" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 6l6 6-6 6" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg class="write-arrow" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 6l6 6-6 6" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
         </button>
 
         <div class="section-title">지금 뜨고있는 게시글<span>🔥</span></div>
@@ -116,17 +352,25 @@
                 <div class="post-top">
                     <div class="post-avatar"><img src="../assets/img/Profile_img.png" alt="author" /></div>
                     <div style="flex:1">
-                        <div style="font-weight:700; font-size:13px; color:#222;">도넛먹는 몬스터 <span style="font-weight:400; color:#999; font-size:12px; margin-left:8px;">2시간 전</span></div>
+                        <div style="font-weight:700; font-size:13px; color:#222;">도넛먹는 몬스터 <span
+                                style="font-weight:400; color:#999; font-size:12px; margin-left:8px;">2시간 전</span></div>
                     </div>
                 </div>
                 <div class="post-body">점심시간에 배구 파티원 모집해요~!</div>
                 <div class="post-stats">
                     <div style="display:flex; align-items:center;">
-                        <svg class="icon-heart" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20.8 8.6c0 6-8.8 10.6-8.8 10.6S3.2 14.6 3.2 8.6C3.2 6 5 4 7.4 4c1.6 0 3 1 3.6 2.3.6-1.3 2-2.3 3.6-2.3 2.4 0 4.2 2 4.2 4.6z" stroke="#7fbf52" stroke-width="1.2" fill="#fff"/></svg>
+                        <svg class="icon-heart" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M20.8 8.6c0 6-8.8 10.6-8.8 10.6S3.2 14.6 3.2 8.6C3.2 6 5 4 7.4 4c1.6 0 3 1 3.6 2.3.6-1.3 2-2.3 3.6-2.3 2.4 0 4.2 2 4.2 4.6z"
+                                stroke="#7fbf52" stroke-width="1.2" fill="#fff" />
+                        </svg>
                         <span>35</span>
                     </div>
                     <div style="display:flex; align-items:center;">
-                        <svg class="icon-chat" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="#7a7a7a" stroke-width="1.2" fill="#fff"/></svg>
+                        <svg class="icon-chat" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="#7a7a7a"
+                                stroke-width="1.2" fill="#fff" />
+                        </svg>
                         <span>3</span>
                     </div>
                 </div>
@@ -160,23 +404,28 @@
         </div>
 
         <nav class="bottom-nav" aria-label="main navigation">
-        <a class="nav-item" href="home.html">
-            <div class="nav-icon"><img src="../assets/img/Home_icon.png" alt="home" style="width:22px;height:22px;"></div>
-            <div>HOME</div>
-        </a>
-        <a class="nav-item" href="myPage.html">
-            <div class="nav-icon"><img src="../assets/img/Profile_icon.png" alt="profile" style="width:22px;height:22px;"></div>
-            <div>PROFILE</div>
-        </a>
-        <a class="nav-item" href="map1.html">
-            <div class="nav-icon"><img src="../assets/img/Map_icon.png" alt="map" style="width:22px;height:22px;"></div>
-            <div>MAP</div>
-        </a>
-        <a class="nav-item" href="#">
-            <div class="nav-icon"><img src="../assets/img/Chap_icon.png" alt="chat" style="width:22px;height:22px;"></div>
-            <div>CHAT</div>
-        </a>
-    </nav>
+            <a class="nav-item" href="home.html">
+                <div class="nav-icon"><img src="../assets/img/Home_icon.png" alt="home" style="width:22px;height:22px;">
+                </div>
+                <div>HOME</div>
+            </a>
+            <a class="nav-item" href="myPage.html">
+                <div class="nav-icon"><img src="../assets/img/Profile_icon.png" alt="profile"
+                        style="width:22px;height:22px;"></div>
+                <div>PROFILE</div>
+            </a>
+            <a class="nav-item" href="map1.html">
+                <div class="nav-icon"><img src="../assets/img/Map_icon.png" alt="map" style="width:22px;height:22px;">
+                </div>
+                <div>MAP</div>
+            </a>
+            <a class="nav-item" href="#">
+                <div class="nav-icon"><img src="../assets/img/Chap_icon.png" alt="chat" style="width:22px;height:22px;">
+                </div>
+                <div>CHAT</div>
+            </a>
+        </nav>
     </div>
 </body>
+
 </html>
