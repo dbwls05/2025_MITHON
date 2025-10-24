@@ -12,7 +12,7 @@
     .back{font-size:22px;cursor:pointer;user-select:none}
     .header-title{flex:1;text-align:center;font-weight:600;font-size:16px}
     .progress-wrap{height:6px;background:#e6e6e6;border-radius:4px;overflow:hidden;margin:8px 0 20px}
-    .progress{height:100%;width:42%;background:#c6f08e} /* 이미지와 유사한 진행률 색/길이 */
+    .progress{height:100%;width:100%;background:#c6f08e}
     .page-title{font-size:20px;font-weight:700;line-height:1.2;margin-bottom:8px;color:#111}
     .subtitle{color:#9b9b9b;font-size:13px;margin-bottom:18px}
     .tags{display:flex;flex-wrap:wrap;gap:12px 12px}
@@ -47,11 +47,42 @@
     }
     .next-button.inactive{background:#d9d9d9;color:#6b6b6b;cursor:default}
     .next-button.active{background:#000;color:#fff}
-    /* 모바일 텍스트 선택 방지(입력 제외) */
     .tag, .back, .header-title, .page-title, .subtitle { -webkit-user-select:none; -ms-user-select:none; user-select:none; }
+    
+    .loading {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+    .loading.show {
+        display: flex;
+    }
+    .spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #c6f08e;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
 </style>
 </head>
 <body>
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+    </div>
+
     <div class="frame" role="main" aria-labelledby="title">
         <div class="top">
             <div class="back" onclick="history.back()">←</div>
@@ -82,10 +113,18 @@
 
         <p id="errorMsg" class="error-msg">선택하지 않았습니다. 선택해주세요.</p>
 
-        <button id="nextBtn" class="next-button inactive" onclick="onNext()">다음</button>
+        <button id="nextBtn" class="next-button inactive" onclick="completeRegistration()">완료</button>
     </div>
 
 <script>
+    // 페이지 로드 시 이전 데이터 확인
+    window.addEventListener('DOMContentLoaded', () => {
+        if (!sessionStorage.getItem('tempIdname') || !sessionStorage.getItem('tempName')) {
+            alert('잘못된 접근입니다.');
+            window.location.href = 'signIn1.html';
+        }
+    });
+
     // 선택 토글 및 버튼 상태 업데이트
     function toggleTag(el){
         el.classList.toggle('selected');
@@ -106,7 +145,8 @@
         }
     }
 
-    function onNext(){
+    // 회원가입 완료
+    async function completeRegistration(){
         const selected = document.querySelectorAll('.tag.selected');
         const err = document.getElementById('errorMsg');
         const btn = document.getElementById('nextBtn');
@@ -118,17 +158,79 @@
             return;
         }
 
-        // 선택된 키워드 값들 저장 (localStorage)
-        const values = Array.from(selected).map(el=>el.dataset.key);
-        try {
-            localStorage.setItem('selectedKeywords', JSON.stringify(values));
-        } catch(e) {
-            console.warn('localStorage 저장 실패', e);
-        }
+        // 선택된 키워드 값들 수집
+        const keywords = Array.from(selected).map(el=>el.dataset.key);
 
-        // 다음 페이지로 이동 (파일명은 프로젝트에 맞게 수정하세요)
-        // 예: signin_step5.html 또는 원하는 경로로 변경
-        window.location.href = 'signin_step5.html';
+        // sessionStorage에서 데이터 가져오기
+        const idname = sessionStorage.getItem('tempIdname');
+        const password = sessionStorage.getItem('tempPassword');
+        const name = sessionStorage.getItem('tempName');
+        const school = sessionStorage.getItem('tempSchool');
+        const grade = parseInt(sessionStorage.getItem('tempGrade'));
+        const classNum = parseInt(sessionStorage.getItem('tempClass'));
+        const chatStyle = JSON.parse(sessionStorage.getItem('tempChatStyle') || '[]');
+
+        // comment에 대화 스타일과 키워드 저장
+        const comment = JSON.stringify({
+            chatStyle: chatStyle,
+            keywords: keywords
+        });
+
+        // 로딩 표시
+        document.getElementById('loading').classList.add('show');
+
+        try {
+            // 1. 학교 등록 또는 조회
+            const schoolResponse = await fetch('http://localhost:8080/api/schools', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: school })
+            });
+
+            const schoolData = await schoolResponse.json();
+            if (!schoolData.success) {
+                throw new Error('학교 등록 실패');
+            }
+
+            const schoolId = schoolData.data.id;
+
+            // 2. 사용자 등록
+            const userResponse = await fetch('http://localhost:8080/api/users/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    idname,
+                    name,
+                    password,
+                    comment,
+                    grade,
+                    classNum,
+                    schoolId,
+                    profilePhoto: null
+                })
+            });
+
+            const userData = await userResponse.json();
+
+            if (userData.success) {
+                // 회원가입 성공
+                alert('회원가입이 완료되었습니다!');
+                
+                // 임시 데이터 삭제
+                sessionStorage.clear();
+                
+                // 로그인 페이지로 이동
+                window.location.href = 'index.html';
+            } else {
+                throw new Error(userData.error || '회원가입 실패');
+            }
+
+        } catch (error) {
+            console.error('회원가입 에러:', error);
+            alert('회원가입 중 오류가 발생했습니다: ' + error.message);
+        } finally {
+            document.getElementById('loading').classList.remove('show');
+        }
     }
 
     // 엔터/스페이스로 버튼 작동하게 하기(접근성)
@@ -136,7 +238,7 @@
         const btn = document.getElementById('nextBtn');
         if((e.key === 'Enter' || e.key === ' ') && document.activeElement === btn){
             e.preventDefault();
-            onNext();
+            completeRegistration();
         }
     });
 
@@ -145,3 +247,19 @@
 </script>
 </body>
 </html>
+    }
+    .loading.show {
+        display: flex;
+    }
+    .spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #c6f08e;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
