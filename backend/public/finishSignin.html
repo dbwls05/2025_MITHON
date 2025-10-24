@@ -38,6 +38,7 @@
             font-weight: bold;
             color: #3C3C3C;
             margin-bottom: 40px;
+            text-align: center;
         }
 
         .image-container {
@@ -48,10 +49,37 @@
             margin-bottom: 40px;
         }
 
-        img {
-            width: 60%;
-            max-width: 280px;
-            height: auto;
+        .success-icon {
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(135deg, #96E072, #C8F179);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+            color: white;
+            animation: scaleIn 0.5s ease-out;
+        }
+
+        @keyframes scaleIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .countdown {
+            font-size: 14px;
+            color: #666;
+            margin-top: 20px;
         }
 
         @media screen and (max-width: 392px) {
@@ -67,14 +95,27 @@
     <div class="container">
         <div class="message">회원가입이 완료되었습니다!</div>
         <div class="image-container">
-            <img src="../assets/img/회원가입완료.png" alt="회원가입완료">
+            <div class="success-icon">✓</div>
         </div>
+        <div class="countdown" id="countdown">3초 후 로그인 페이지로 이동합니다...</div>
     </div>
 
     <script>
-        setTimeout(() => {
-            window.location.href = 'index.html';
-        }, 2000);
+        let count = 3;
+        const countdownEl = document.getElementById('countdown');
+
+        const timer = setInterval(() => {
+            count--;
+            if (count > 0) {
+                countdownEl.textContent = `${count}초 후 로그인 페이지로 이동합니다...`;
+            } else {
+                clearInterval(timer);
+                window.location.href = 'index.html';
+            }
+        }, 1000);
+
+        // 회원가입 완료 후 임시 데이터 삭제
+        sessionStorage.clear();
     </script>
 </body>
 
