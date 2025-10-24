@@ -45,6 +45,11 @@
         justify-content:center;
         box-shadow:none;
     }
+    .next-button a{
+        color: #9A9A9A;
+        text-decoration: none; 
+
+    }
     .next-button.inactive{background:#d9d9d9;color:#6b6b6b;cursor:default}
     .next-button.active{background:#000;color:#fff}
     /* 모바일 텍스트 선택 방지(입력 제외) */
@@ -82,7 +87,7 @@
 
         <p id="errorMsg" class="error-msg">선택하지 않았습니다. 선택해주세요.</p>
 
-        <button id="nextBtn" class="next-button inactive" onclick="onNext()">다음</button>
+        <button id="nextBtn" class="next-button inactive"><a href="singIn5.html">다음</a></button>
     </div>
 
 <script>
