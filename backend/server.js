@@ -1,10 +1,23 @@
 const express = require('express');
+const cors = require('cors');  // 추가
+
+const app = express();
+
+app.use(cors());           // 모든 origin 허용
+app.use(express.json());   // JSON 요청 파싱
+app.use(express.static('public'));
+
+
 const bcrypt = require('bcrypt');
 const db = require('./DB');
 const niceAPI = require('./niceAPI');
 const path = require('path');
 
-const app = express(); // ← 반드시 먼저 선언
+
+app.use(cors()); // 모든 도메인에서 요청 허용
+app.use(express.json());
+app.use(express.static('public'));
+ // ← 반드시 먼저 선언
 const PORT = 8080;
 
 // ============================
