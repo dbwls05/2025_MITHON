@@ -1,8 +1,8 @@
 const axios = require('axios');
 
 // NICE API 키 설정 (본인의 API 키로 교체 필요)
-const NICE_API_KEY = '4af44da838cc4a4db7675f01b5a330b7';
-const NICE_API_URL = 'https://open.neis.go.kr/hub';
+const NICE_API_KEY = '';
+const NICE_API_URL = '';
 
 /**
  * 학교 검색 (고등학교만)
