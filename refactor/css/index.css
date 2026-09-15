@@ -1,0 +1,61 @@
+body {
+    background-color: rgb(178, 241, 90, 0.4);
+}
+
+hr {
+    margin-bottom: 55px;
+}
+
+.app {
+    background-color: white;
+    width: 393px;
+    height: 874px;
+    justify-self: center;
+    padding: 20px;
+}
+
+.next_button {
+    width: 353px;
+    height: 65px;
+    background-color: black;
+    border-radius: 34px;
+    justify-self: center;
+    align-items: center;
+    border: 20px;
+}
+
+.next_button p {
+    font-size: 16px;
+    color: white;
+    justify-self: center;
+    align-self: center;
+    margin: 0;
+}
+
+.text_1 {
+    font-size: 24px;
+    font-family: 'Pretendard';
+    color: #86D715;
+}
+
+.text_2 {
+    font-size: 24px;
+    font-family: 'Pretendard';
+}
+
+.text_3 {
+    font-size: 16px;
+    font-family: 'Pretendard';
+}
+
+.sub_bar {
+    display: flex;
+    justify-self: center;
+    gap: 20px;
+    color: #86D715;
+}
+
+.sub_bar p {
+    margin: 0px;
+    color: #BCBCBC;
+}
