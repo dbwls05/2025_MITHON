@@ -20,18 +20,14 @@ public class Auth {
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    // 기본 생성자 (JPA 필수)
     protected Auth() {}
 
-    // insert용 생성자
     public Auth(String identifier, String password) {
         this.identifier = identifier;
         this.password = password;
     }
 
-    // Getter
     public Integer getId() { return id; }
     public String getIdentifier() { return identifier; }
     public String getPassword() { return password; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
 }
