@@ -18,6 +18,10 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.4.0",
-    "mysql2": "^3.24.4"
+    "mysql2": "^3.24.4",
+    "socket.io": "^4.8.4"
+  },
+  "devDependencies": {
+    "socket.io-client": "^4.8.4"
   }
 }

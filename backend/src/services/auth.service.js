@@ -2,37 +2,28 @@
 // 회원/인증 (USR)
 // ===================================
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 const { pool, withTransaction } = require('../config/db');
-const { jwt: jwtConfig } = require('../config/env');
 const schoolService = require('./school.service');
+const keywordService = require('./keyword.service');
+const { issueToken } = require('../utils/token');
 const HttpError = require('../utils/HttpError');
 
 const SALT_ROUNDS = 10;
-const MAX_KEYWORDS = 3;
-
-function issueToken(userId) {
-  return jwt.sign({ userId }, jwtConfig.secret, { expiresIn: jwtConfig.expiresIn });
-}
 
 // USR-03~06 회원가입. 성공하면 바로 로그인된 상태로 토큰을 돌려준다.
 async function signup({ identifier, password, name, schoolCode, grade, classNum, keywordIds }) {
-  if (keywordIds.length > MAX_KEYWORDS) {
-    throw new HttpError(400, `카테고리는 최대 ${MAX_KEYWORDS}개까지 선택할 수 있습니다.`);
-  }
-
   const hashed = await bcrypt.hash(password, SALT_ROUNDS);
 
-  const userId = await withTransaction(async (conn) => {
+  const account = await withTransaction(async (conn) => {
     const schoolId = await schoolService.findOrCreateByCode(conn, schoolCode);
 
-    let authId;
+    let userId;
     try {
       const [result] = await conn.query(
         'INSERT INTO auth (identifier, password) VALUES (?, ?)',
         [identifier, hashed]
       );
-      authId = result.insertId;
+      userId = result.insertId;
     } catch (err) {
       if (err.code === 'ER_DUP_ENTRY') throw new HttpError(409, '이미 사용 중인 아이디입니다.');
       throw err;
@@ -40,38 +31,53 @@ async function signup({ identifier, password, name, schoolCode, grade, classNum,
 
     await conn.query(
       'INSERT INTO `user` (id, name, school_id, grade, class) VALUES (?, ?, ?, ?, ?)',
-      [authId, name, schoolId, grade, classNum]
+      [userId, name, schoolId, grade, classNum]
     );
+    await keywordService.replaceUserKeywords(conn, userId, keywordIds);
 
-    if (keywordIds.length > 0) {
-      try {
-        await conn.query(
-          'INSERT INTO keyword_user (user_id, keyword_id) VALUES ?',
-          [keywordIds.map((keywordId) => [authId, keywordId])]
-        );
-      } catch (err) {
-        if (err.code === 'ER_NO_REFERENCED_ROW_2') throw new HttpError(400, '존재하지 않는 카테고리입니다.');
-        throw err;
-      }
-    }
-
-    return authId;
+    return { userId, schoolId };
   });
 
-  return { userId, token: issueToken(userId) };
+  return { userId: account.userId, token: issueToken(account) };
 }
 
 // USR-01 로그인. 아이디가 없든 비밀번호가 틀리든 같은 메시지를 준다.
 async function login({ identifier, password }) {
-  const [rows] = await pool.query('SELECT id, password FROM auth WHERE identifier = ?', [identifier]);
-  const auth = rows[0];
+  const [rows] = await pool.query(
+    `SELECT a.id, a.password, u.school_id
+     FROM auth a JOIN \`user\` u ON u.id = a.id
+     WHERE a.identifier = ?`,
+    [identifier]
+  );
+  const account = rows[0];
 
-  const ok = auth && (await bcrypt.compare(password, auth.password));
+  const ok = account && (await bcrypt.compare(password, account.password));
   if (!ok) {
     throw new HttpError(401, '아이디 또는 비밀번호가 올바르지 않습니다.');
   }
 
-  return { userId: auth.id, token: issueToken(auth.id) };
+  return { userId: account.id, token: issueToken({ userId: account.id, schoolId: account.school_id }) };
 }
 
-module.exports = { signup, login };
+// 앞 3글자(짧으면 1글자)만 보여준다: seyoung → sey****
+function maskIdentifier(identifier) {
+  const visible = identifier.length > 4 ? 3 : 1;
+  return identifier.slice(0, visible) + '*'.repeat(identifier.length - visible);
+}
+
+// USR-02 아이디 찾기. 같은 반 동명이인이 있으면 여러 개가 나온다.
+// 이름·학교·학년·반만 알면 누구나 조회할 수 있으므로 아이디 일부를 가려서 준다.
+async function findIdentifiers({ name, schoolCode, grade, classNum }) {
+  const [rows] = await pool.query(
+    `SELECT a.identifier, a.created_at
+     FROM \`user\` u
+     JOIN school s ON s.id = u.school_id
+     JOIN auth a ON a.id = u.id
+     WHERE u.name = ? AND s.code = ? AND u.grade = ? AND u.class = ?
+     ORDER BY a.created_at`,
+    [name, schoolCode, grade, classNum]
+  );
+  return rows.map((row) => ({ identifier: maskIdentifier(row.identifier), createdAt: row.created_at }));
+}
+
+module.exports = { signup, login, findIdentifiers };

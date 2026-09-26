@@ -39,4 +39,16 @@ async function login(req, res) {
   res.json(result);
 }
 
-module.exports = { signup, login };
+// POST /api/auth/find-id
+async function findId(req, res) {
+  const body = req.body ?? {};
+  const identifiers = await authService.findIdentifiers({
+    name: requireString(body.name, '이름', { max: 16 }),
+    schoolCode: requireString(body.schoolCode, '학교'),
+    grade: requirePositiveInt(body.grade, '학년'),
+    classNum: requirePositiveInt(body.classNum, '반'),
+  });
+  res.json(identifiers);
+}
+
+module.exports = { signup, login, findId };
