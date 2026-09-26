@@ -1,0 +1,156 @@
+-- ===============================
+-- 학교 기반 위치 커뮤니티 앱 스키마 (DB 설계서 수정본 기준)
+-- 대상: MySQL 8.0 이상 (AWS RDS for MySQL)
+-- 실행: mysql -h <RDS 엔드포인트> -P 3306 -u <user> -p < db/schema.sql
+-- 빈 DB에 처음 한 번 실행하는 생성 전용 스크립트다.
+-- 테이블은 참조 관계 순서대로 만든다.
+-- ===================================
+
+CREATE DATABASE IF NOT EXISTS donut
+  DEFAULT CHARACTER SET utf8mb4
+  DEFAULT COLLATE utf8mb4_0900_ai_ci;
+
+USE donut;
+
+-- ===============================
+-- 계정·사용자
+-- ===================================
+CREATE TABLE school (
+  id   INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL UNIQUE
+);
+
+CREATE TABLE auth (
+  id         INT AUTO_INCREMENT PRIMARY KEY,
+  identifier VARCHAR(255) NOT NULL UNIQUE,
+  password   VARCHAR(255) NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- id는 auth.id를 그대로 사용한다 (AUTO_INCREMENT 없음)
+CREATE TABLE `user` (
+  id           INT PRIMARY KEY,
+  name         VARCHAR(16)  NOT NULL,
+  img          VARCHAR(255),
+  introduction VARCHAR(255),
+  school_id    INT NOT NULL,
+  grade        INT NOT NULL,
+  class        INT NOT NULL,
+  INDEX idx_user_find (name, school_id, grade, class),
+  FOREIGN KEY (id) REFERENCES auth(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (school_id) REFERENCES school(id) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- ===============================
+-- 카테고리 (사용자당 최대 3개는 애플리케이션에서 검사)
+-- ===================================
+CREATE TABLE keyword (
+  id   INT AUTO_INCREMENT PRIMARY KEY,
+  word VARCHAR(16) NOT NULL UNIQUE
+);
+
+CREATE TABLE keyword_user (
+  id         INT AUTO_INCREMENT PRIMARY KEY,
+  user_id    INT NOT NULL,
+  keyword_id INT NOT NULL,
+  UNIQUE (user_id, keyword_id),
+  FOREIGN KEY (user_id) REFERENCES `user`(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (keyword_id) REFERENCES keyword(id) ON DELETE RESTRICT ON UPDATE RESTRICT
+);
+
+-- ===============================
+-- 장소
+-- ===================================
+CREATE TABLE place (
+  id        INT AUTO_INCREMENT PRIMARY KEY,
+  school_id INT NOT NULL,
+  name      VARCHAR(32) NOT NULL,
+  latitude  DECIMAL(10,7) NOT NULL,
+  longitude DECIMAL(10,7) NOT NULL,
+  UNIQUE (school_id, name),
+  FOREIGN KEY (school_id) REFERENCES school(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE place_favorite (
+  id         INT AUTO_INCREMENT PRIMARY KEY,
+  user_id    INT NOT NULL,
+  place_id   INT NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE (user_id, place_id),
+  FOREIGN KEY (user_id) REFERENCES `user`(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (place_id) REFERENCES place(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- ===============================
+-- 게시글
+-- ===================================
+CREATE TABLE post (
+  id           INT AUTO_INCREMENT PRIMARY KEY,
+  user_id      INT NOT NULL,
+  place_id     INT NOT NULL,
+  text         TEXT NOT NULL,
+  is_anonymous BOOLEAN NOT NULL DEFAULT 0,
+  created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_post_place (place_id, created_at),
+  INDEX idx_post_user (user_id, created_at),
+  FOREIGN KEY (user_id) REFERENCES `user`(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (place_id) REFERENCES place(id) ON DELETE RESTRICT ON UPDATE RESTRICT
+);
+
+CREATE TABLE post_like (
+  id         INT AUTO_INCREMENT PRIMARY KEY,
+  user_id    INT NOT NULL,
+  post_id    INT NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE (user_id, post_id),
+  FOREIGN KEY (user_id) REFERENCES `user`(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (post_id) REFERENCES post(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE comment (
+  id         INT AUTO_INCREMENT PRIMARY KEY,
+  post_id    INT NOT NULL,
+  user_id    INT NOT NULL,
+  text       TEXT NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_comment_post (post_id, created_at),
+  FOREIGN KEY (post_id) REFERENCES post(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES `user`(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- ===============================
+-- 친구 (양방향 두 행, me_id <> you_id는 애플리케이션에서 검사)
+-- ===================================
+CREATE TABLE friend (
+  id         INT AUTO_INCREMENT PRIMARY KEY,
+  me_id      INT NOT NULL,
+  you_id     INT NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE (me_id, you_id),
+  FOREIGN KEY (me_id) REFERENCES `user`(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (you_id) REFERENCES `user`(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- ===============================
+-- 채팅 (user1_id < user2_id는 애플리케이션에서 보장)
+-- ===================================
+CREATE TABLE chat_room (
+  id         INT AUTO_INCREMENT PRIMARY KEY,
+  user1_id   INT NOT NULL,
+  user2_id   INT NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE (user1_id, user2_id),
+  FOREIGN KEY (user1_id) REFERENCES `user`(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (user2_id) REFERENCES `user`(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE chat_message (
+  id         INT AUTO_INCREMENT PRIMARY KEY,
+  room_id    INT NOT NULL,
+  sender_id  INT NOT NULL,
+  text       TEXT NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_msg_room (room_id, created_at),
+  FOREIGN KEY (room_id) REFERENCES chat_room(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (sender_id) REFERENCES `user`(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
