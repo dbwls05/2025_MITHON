@@ -62,13 +62,17 @@ CREATE TABLE keyword_user (
 
 -- ===============================
 -- 장소
+-- is_official = 1: seed로 넣은 기본 장소. 항상 지도에 보이고 삭제되지 않는다.
+-- is_official = 0: 게시글 작성 때 사용자가 만든 장소. 최근 7일 글이 있을 때만 지도에 보이고,
+--                  이 장소를 쓰는 글이 하나도 없으면 삭제된다.
 -- ===================================
 CREATE TABLE place (
-  id        INT AUTO_INCREMENT PRIMARY KEY,
-  school_id INT NOT NULL,
-  name      VARCHAR(32) NOT NULL,
-  latitude  DECIMAL(10,7) NOT NULL,
-  longitude DECIMAL(10,7) NOT NULL,
+  id          INT AUTO_INCREMENT PRIMARY KEY,
+  school_id   INT NOT NULL,
+  name        VARCHAR(32) NOT NULL,
+  latitude    DECIMAL(10,7) NOT NULL,
+  longitude   DECIMAL(10,7) NOT NULL,
+  is_official BOOLEAN NOT NULL DEFAULT 0,
   UNIQUE (school_id, name),
   FOREIGN KEY (school_id) REFERENCES school(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
@@ -93,6 +97,7 @@ CREATE TABLE post (
   text         TEXT NOT NULL,
   is_anonymous BOOLEAN NOT NULL DEFAULT 0,
   created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at   DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP, -- 수정한 적 없으면 NULL
   INDEX idx_post_place (place_id, created_at),
   INDEX idx_post_user (user_id, created_at),
   FOREIGN KEY (user_id) REFERENCES `user`(id) ON DELETE CASCADE ON UPDATE CASCADE,

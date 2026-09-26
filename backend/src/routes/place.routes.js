@@ -7,7 +7,7 @@ const router = Router();
 
 router.use(requireAuth);
 
-router.get('/', placeController.list);                           // MAP-02~03, PST-01 우리 학교 장소 + 게시글 수
+router.get('/', placeController.list);                           // MAP-02~03, PST-01 기본 장소 + 최근 7일 글 있는 사용자 장소 (postCount = 7일)
 router.get('/favorites', placeController.favorites);             // MAP-04 즐겨찾기 장소 목록
 router.put('/:placeId/favorite', placeController.addFavorite);   // MAP-07 즐겨찾기 추가
 router.delete('/:placeId/favorite', placeController.removeFavorite); // MAP-08 즐겨찾기 해제
