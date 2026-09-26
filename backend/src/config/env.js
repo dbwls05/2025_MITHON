@@ -1,7 +1,7 @@
 // ===============================
 // 환경 변수 로드 및 필수값 검사
 // ===================================
-require('dotenv').config();
+require('dotenv').config({ quiet: true });
 
 const required = ['DB_USER', 'DB_NAME', 'JWT_SECRET'];
 const missing = required.filter((key) => !process.env[key]);

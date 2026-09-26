@@ -2,8 +2,8 @@
 -- 카테고리 선택지 (USR-06)
 -- 여러 번 실행해도 된다: 이미 있는 키워드는 건너뛴다 (word UNIQUE)
 -- 주의: RDS(Linux)는 테이블명 대소문자를 구분하므로 소문자 keyword로 써야 한다.
+-- 실행: mysql ... <DB 이름> < db/seeds/keywords.sql
 -- ===================================
-USE donut;
 
 INSERT IGNORE INTO keyword (word)
 VALUES

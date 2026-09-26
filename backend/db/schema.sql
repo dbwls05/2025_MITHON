@@ -1,16 +1,12 @@
 -- ===============================
 -- 학교 기반 위치 커뮤니티 앱 스키마 (DB 설계서 수정본 기준)
 -- 대상: MySQL 8.0 이상 (AWS RDS for MySQL)
--- 실행: mysql -h <RDS 엔드포인트> -P 3306 -u <user> -p < db/schema.sql
--- 빈 DB에 처음 한 번 실행하는 생성 전용 스크립트다.
+-- 실행: mysql -h <RDS 엔드포인트> -P 3306 -u <user> -p <DB 이름> < db/schema.sql
+--   DB 이름을 명령에 넘기므로 운영(donut)과 테스트(donut_test)에 같은 파일을 쓴다.
+--   DB가 없으면 먼저 만든다: CREATE DATABASE donut DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+-- 빈 DB에 처음 한 번 실행하는 생성 전용 스크립트다. 항상 최신 구조이며, 이미 쓰고 있는 DB는 migrations/를 적용한다.
 -- 테이블은 참조 관계 순서대로 만든다.
 -- ===================================
-
-CREATE DATABASE IF NOT EXISTS donut
-  DEFAULT CHARACTER SET utf8mb4
-  DEFAULT COLLATE utf8mb4_0900_ai_ci;
-
-USE donut;
 
 -- ===============================
 -- 계정·사용자
