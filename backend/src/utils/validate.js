@@ -27,4 +27,30 @@ function optionalIntArray(value, field) {
   return [...new Set(value.map((v) => requirePositiveInt(v, field)))];
 }
 
-module.exports = { requireString, requirePositiveInt, optionalIntArray };
+// 없으면 기본값. true/false만 허용한다.
+function optionalBoolean(value, field, defaultValue = false) {
+  if (value === undefined || value === null) return defaultValue;
+  if (typeof value !== 'boolean') throw new HttpError(400, `${field}은(는) true 또는 false여야 합니다.`);
+  return value;
+}
+
+// URL 경로의 :id 값. 숫자가 아니면 해당 리소스가 없는 것으로 본다.
+function parseIdParam(value) {
+  const num = Number(value);
+  if (!Number.isInteger(num) || num < 1) throw new HttpError(404, '존재하지 않는 항목입니다.');
+  return num;
+}
+
+// LIKE 검색어의 %, _ 를 문자 그대로 검색되게 한다
+function escapeLike(value) {
+  return value.replace(/[\\%_]/g, (ch) => `\\${ch}`);
+}
+
+module.exports = {
+  requireString,
+  requirePositiveInt,
+  optionalIntArray,
+  optionalBoolean,
+  parseIdParam,
+  escapeLike,
+};
