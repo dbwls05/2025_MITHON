@@ -15,9 +15,11 @@ USE donut;
 -- ===============================
 -- 계정·사용자
 -- ===================================
+-- code: NICE 교육청코드_학교코드 (예: B10_7010057). 이름이 같은 학교가 여러 지역에 있어 code로 구분한다.
 CREATE TABLE school (
   id   INT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(255) NOT NULL UNIQUE
+  code VARCHAR(20)  NOT NULL UNIQUE,
+  name VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE auth (

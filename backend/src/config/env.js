@@ -22,4 +22,6 @@ module.exports = {
     secret: process.env.JWT_SECRET,
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',
   },
+  // 비어 있으면 NICE가 샘플 데이터(최대 5건)만 돌려준다
+  niceApiKey: process.env.NICE_API_KEY || '',
 };
