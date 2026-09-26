@@ -1,16 +1,12 @@
 -- ===============================
 -- 학교 기반 위치 커뮤니티 앱 스키마 (DB 설계서 수정본 기준)
 -- 대상: MySQL 8.0 이상 (AWS RDS for MySQL)
--- 실행: mysql -h <RDS 엔드포인트> -P 3306 -u <user> -p < db/schema.sql
--- 빈 DB에 처음 한 번 실행하는 생성 전용 스크립트다.
+-- 실행: mysql -h <RDS 엔드포인트> -P 3306 -u <user> -p <DB 이름> < db/schema.sql
+--   DB 이름을 명령에 넘기므로 운영(donut)과 테스트(donut_test)에 같은 파일을 쓴다.
+--   DB가 없으면 먼저 만든다: CREATE DATABASE donut DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+-- 빈 DB에 처음 한 번 실행하는 생성 전용 스크립트다. 항상 최신 구조이며, 이미 쓰고 있는 DB는 migrations/를 적용한다.
 -- 테이블은 참조 관계 순서대로 만든다.
 -- ===================================
-
-CREATE DATABASE IF NOT EXISTS donut
-  DEFAULT CHARACTER SET utf8mb4
-  DEFAULT COLLATE utf8mb4_0900_ai_ci;
-
-USE donut;
 
 -- ===============================
 -- 계정·사용자
@@ -62,13 +58,17 @@ CREATE TABLE keyword_user (
 
 -- ===============================
 -- 장소
+-- is_official = 1: seed로 넣은 기본 장소. 항상 지도에 보이고 삭제되지 않는다.
+-- is_official = 0: 게시글 작성 때 사용자가 만든 장소. 최근 7일 글이 있을 때만 지도에 보이고,
+--                  이 장소를 쓰는 글이 하나도 없으면 삭제된다.
 -- ===================================
 CREATE TABLE place (
-  id        INT AUTO_INCREMENT PRIMARY KEY,
-  school_id INT NOT NULL,
-  name      VARCHAR(32) NOT NULL,
-  latitude  DECIMAL(10,7) NOT NULL,
-  longitude DECIMAL(10,7) NOT NULL,
+  id          INT AUTO_INCREMENT PRIMARY KEY,
+  school_id   INT NOT NULL,
+  name        VARCHAR(32) NOT NULL,
+  latitude    DECIMAL(10,7) NOT NULL,
+  longitude   DECIMAL(10,7) NOT NULL,
+  is_official BOOLEAN NOT NULL DEFAULT 0,
   UNIQUE (school_id, name),
   FOREIGN KEY (school_id) REFERENCES school(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
@@ -93,6 +93,7 @@ CREATE TABLE post (
   text         TEXT NOT NULL,
   is_anonymous BOOLEAN NOT NULL DEFAULT 0,
   created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at   DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP, -- 수정한 적 없으면 NULL
   INDEX idx_post_place (place_id, created_at),
   INDEX idx_post_user (user_id, created_at),
   FOREIGN KEY (user_id) REFERENCES `user`(id) ON DELETE CASCADE ON UPDATE CASCADE,

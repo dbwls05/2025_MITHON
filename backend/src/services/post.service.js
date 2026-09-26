@@ -1,7 +1,8 @@
 // ===============================
 // 게시글·좋아요·댓글 (PST, HOM-01~03, MAP-05~06, PRF-07)
 // ===================================
-const { pool } = require('../config/db');
+const { pool, withTransaction } = require('../config/db');
+const placeService = require('./place.service');
 const HttpError = require('../utils/HttpError');
 const { olderThan, toPage } = require('../utils/pagination');
 
@@ -10,9 +11,9 @@ const ANONYMOUS_AUTHOR = Object.freeze({ id: null, name: '익명', img: null });
 // 목록 조회 공통 SELECT. 첫 번째 ?는 조회하는 사용자 id (내가 좋아요 눌렀는지).
 // 좋아요·댓글 수는 반환되는 행에 대해서만 인덱스로 COUNT한다 (post_like.post_id, comment.idx_comment_post).
 const POST_SELECT = `
-  SELECT p.id, p.text, p.is_anonymous, p.created_at, p.user_id,
+  SELECT p.id, p.text, p.is_anonymous, p.created_at, p.updated_at, p.user_id,
          u.name AS user_name, u.img AS user_img,
-         pl.id AS place_id, pl.name AS place_name,
+         pl.id AS place_id, pl.name AS place_name, pl.is_official AS place_is_official,
          (SELECT COUNT(*) FROM post_like l WHERE l.post_id = p.id) AS like_count,
          (SELECT COUNT(*) FROM comment c WHERE c.post_id = p.id) AS comment_count,
          EXISTS (SELECT 1 FROM post_like l WHERE l.post_id = p.id AND l.user_id = ?) AS is_liked
@@ -27,7 +28,8 @@ function toPost(row, viewerId) {
     id: row.id,
     text: row.text,
     createdAt: row.created_at,
-    place: { id: row.place_id, name: row.place_name },
+    updatedAt: row.updated_at, // 수정한 적 없으면 null
+    place: { id: row.place_id, name: row.place_name, isOfficial: Boolean(row.place_is_official) },
     isAnonymous,
     author: isAnonymous ? ANONYMOUS_AUTHOR : { id: row.user_id, name: row.user_name, img: row.user_img },
     isMine: row.user_id === viewerId,
@@ -79,18 +81,69 @@ async function getTrendingPost({ viewerId, schoolId }) {
   return rows.length > 0 ? toPost(rows[0], viewerId) : null;
 }
 
-// PST-01~04 게시글 작성. 장소는 우리 학교 것만 고를 수 있다.
-async function createPost({ userId, schoolId, placeId, text, isAnonymous }) {
-  const [places] = await pool.query('SELECT school_id FROM place WHERE id = ?', [placeId]);
-  if (places.length === 0 || places[0].school_id !== schoolId) {
-    throw new HttpError(400, '존재하지 않는 장소입니다.');
-  }
+// PST-01~04 게시글 작성. 장소는 목록에서 고르거나(placeId) 새로 입력한다(newPlace).
+// 새 장소 생성과 글 작성을 한 트랜잭션으로 묶어, 글 없는 사용자 장소가 남지 않게 한다.
+async function createPost({ userId, schoolId, place, text, isAnonymous }) {
+  const postId = await withTransaction(async (conn) => {
+    const placeId = await placeService.resolvePlaceId(conn, schoolId, place);
+    const [result] = await conn.query(
+      'INSERT INTO post (user_id, place_id, text, is_anonymous) VALUES (?, ?, ?, ?)',
+      [userId, placeId, text, isAnonymous]
+    );
+    return result.insertId;
+  });
+  return getPost(postId, userId);
+}
 
-  const [result] = await pool.query(
-    'INSERT INTO post (user_id, place_id, text, is_anonymous) VALUES (?, ?, ?, ?)',
-    [userId, placeId, text, isAnonymous]
+// 수정·삭제 전 확인: 우리 학교 글이 아니면 404, 내 글이 아니면 403. 행을 잠가 동시 수정을 막는다.
+async function lockOwnPost(conn, { userId, schoolId, postId }) {
+  const [rows] = await conn.query(
+    `SELECT p.user_id, p.place_id, pl.school_id
+     FROM post p JOIN place pl ON pl.id = p.place_id
+     WHERE p.id = ? FOR UPDATE`,
+    [postId]
   );
-  return getPost(result.insertId, userId);
+  if (rows.length === 0 || rows[0].school_id !== schoolId) {
+    throw new HttpError(404, '존재하지 않는 게시글입니다.');
+  }
+  if (rows[0].user_id !== userId) {
+    throw new HttpError(403, '내가 쓴 글만 수정하거나 삭제할 수 있습니다.');
+  }
+  return rows[0];
+}
+
+// 게시글 수정. 넘어온 항목만 바꾼다. 장소를 바꾸면 이전 사용자 장소가 비었는지 확인해 정리한다.
+async function updatePost({ userId, schoolId, postId, text, isAnonymous, place }) {
+  await withTransaction(async (conn) => {
+    const before = await lockOwnPost(conn, { userId, schoolId, postId });
+
+    const sets = [];
+    const params = [];
+    if (text !== undefined) { sets.push('text = ?'); params.push(text); }
+    if (isAnonymous !== undefined) { sets.push('is_anonymous = ?'); params.push(isAnonymous); }
+
+    let placeId = before.place_id;
+    if (place) {
+      placeId = await placeService.resolvePlaceId(conn, schoolId, place);
+      sets.push('place_id = ?');
+      params.push(placeId);
+    }
+
+    await conn.query(`UPDATE post SET ${sets.join(', ')} WHERE id = ?`, [...params, postId]);
+    if (placeId !== before.place_id) {
+      await placeService.deleteIfUnused(conn, before.place_id);
+    }
+  });
+  return getPost(postId, userId);
+}
+
+// 게시글 삭제. 좋아요·댓글은 FK CASCADE로 함께 지워지고, 비게 된 사용자 장소도 정리한다.
+async function deletePost({ userId, schoolId, postId }) {
+  await withTransaction(async (conn) => {
+    const before = await lockOwnPost(conn, { userId, schoolId, postId });
+    await conn.query('DELETE FROM post WHERE id = ?', [postId]);
+    await placeService.deleteIfUnused(conn, before.place_id);
+  });
 }
 
 async function countLikes(postId) {
@@ -150,6 +203,8 @@ module.exports = {
   listPosts,
   getTrendingPost,
   createPost,
+  updatePost,
+  deletePost,
   likePost,
   unlikePost,
   listComments,
