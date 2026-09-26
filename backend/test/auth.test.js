@@ -16,10 +16,23 @@ describe('회원/인증', () => {
   });
   after(() => server.close());
 
-  it('학교 검색: 이름이 포함된 학교를 코드·지역·주소와 함께 준다', async () => {
+  it('학교 검색: 코드·지역·주소 + 서비스 여부(isSupported), 서비스 학교가 먼저', async () => {
     const res = await api.get('/schools/search?name=' + encodeURIComponent('미림'));
     assert.equal(res.status, 200);
-    assert.deepEqual(res.body, [SCHOOLS.MIRIM]);
+    assert.deepEqual(res.body, [
+      { ...SCHOOLS.MIRIM, isSupported: true },
+      { ...SCHOOLS.UNSUPPORTED, isSupported: false },
+    ]);
+  });
+
+  it('회원가입: 서비스하지 않는 학교(기본 장소 없음) → 400', async () => {
+    const res = await api.post('/auth/signup', {
+      body: { identifier: 'unsupported', password: PASSWORD, passwordConfirm: PASSWORD, name: '다른학생', schoolCode: SCHOOLS.UNSUPPORTED.code, grade: 1, classNum: 1 },
+    });
+    assert.equal(res.status, 400);
+    assert.equal(res.body.message, '아직 서비스하지 않는 학교입니다.');
+    const [rows] = await pool.query('SELECT 1 FROM school WHERE code = ?', [SCHOOLS.UNSUPPORTED.code]);
+    assert.equal(rows.length, 0);
   });
 
   it('학교 검색: 이름이 없으면 400', async () => {
@@ -57,7 +70,7 @@ describe('회원/인증', () => {
     assert.equal(payload.schoolId, user.school_id);
   });
 
-  it('회원가입: 같은 학교 두 번째 가입은 school 행을 재사용한다', async () => {
+  it('회원가입: 같은 학교 두 번째 가입도 school 행을 새로 만들지 않는다', async () => {
     await signup(api, { identifier: 'second' });
     const [[{ n }]] = await pool.query('SELECT COUNT(*) AS n FROM school WHERE code = ?', [SCHOOLS.MIRIM.code]);
     assert.equal(n, 1);

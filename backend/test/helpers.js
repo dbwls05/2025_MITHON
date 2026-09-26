@@ -28,18 +28,27 @@ const DB_DIR = path.join(__dirname, '..', 'db');
 const UPLOAD_DIR = path.join(__dirname, '..', 'uploads');
 const PASSWORD = 'test12345!';
 
-// ── 가짜 NICE: 미림마이스터고(seed에 기본 장소 있음)와 기본 장소가 없는 다른 학교
+// ── 가짜 NICE 학교
+// MIRIM: 실제 seed(places.sql)로 서비스 중인 학교
+// OTHER: 학교 격리 테스트용. 테스트 DB에서만 기본 장소를 넣어 서비스 학교로 만든다 (TEST_ONLY_SEED)
+// UNSUPPORTED: 기본 장소가 없어 가입할 수 없는 학교
 const SCHOOLS = {
   MIRIM: { code: 'B10_7011569', name: '미림마이스터고등학교', region: '서울특별시교육청', address: '서울특별시 관악구 호암로 546' },
   OTHER: { code: 'B10_7010240', name: '중앙고등학교', region: '서울특별시교육청', address: '서울특별시 종로구 창덕궁길 164' },
+  UNSUPPORTED: { code: 'B10_7010167', name: '미림여자고등학교', region: '서울특별시교육청', address: '서울특별시 관악구 호암로 546' },
 };
 niceService.searchSchools = async (name) => Object.values(SCHOOLS).filter((s) => s.name.includes(name));
-niceService.getSchoolByCode = async (code) => Object.values(SCHOOLS).find((s) => s.code === code) ?? null;
+
+const TEST_ONLY_SEED = `
+  INSERT INTO school (code, name) VALUES ('${SCHOOLS.OTHER.code}', '${SCHOOLS.OTHER.name}');
+  INSERT INTO place (school_id, name, latitude, longitude, is_official)
+  SELECT id, '중앙운동장', 37.5796212, 126.9883417, 1 FROM school WHERE code = '${SCHOOLS.OTHER.code}';
+`;
 
 // seed 기본 장소 3개의 중심 근처
 const MIRIM_CENTER = { lat: 37.46665, lng: 126.93267 };
 
-// ── 테스트 DB 초기화: 테이블을 모두 지우고 schema.sql + seeds로 다시 만든다
+// ── 테스트 DB 초기화: 테이블을 모두 지우고 schema.sql + seeds + TEST_ONLY_SEED로 다시 만든다
 async function resetDatabase() {
   const conn = await mysql.createConnection({ ...dbConfig, multipleStatements: true, charset: 'utf8mb4' });
   try {
@@ -54,6 +63,7 @@ async function resetDatabase() {
     for (const file of ['schema.sql', 'seeds/keywords.sql', 'seeds/places.sql']) {
       await conn.query(fs.readFileSync(path.join(DB_DIR, file), 'utf8'));
     }
+    await conn.query(TEST_ONLY_SEED);
   } finally {
     await conn.end();
   }

@@ -27,12 +27,7 @@ describe('게시글', () => {
     gym = places.find((p) => p.name === '체육관');
     hall = places.find((p) => p.name === '본관');
 
-    const [[other]] = await pool.query('SELECT id FROM school WHERE code = ?', [SCHOOLS.OTHER.code]);
-    const [result] = await pool.query(
-      'INSERT INTO place (school_id, name, latitude, longitude, is_official) VALUES (?, ?, 37.5, 127.0, 1)',
-      [other.id, '다른학교운동장']
-    );
-    otherSchoolPlaceId = result.insertId;
+    otherSchoolPlaceId = (await api.get('/places', { token: c.token })).body[0].id;
   });
   after(() => server.close());
 
@@ -148,6 +143,10 @@ describe('게시글', () => {
 
       const list = (await api.get(`/posts/${anonPost.id}/comments`, { token: b.token })).body;
       assert.deepEqual(list.map((cm) => cm.text), ['첫 댓글', '둘째 댓글']);
+
+      // 익명 글 작성자(A)의 댓글은 익명 처리하지 않고 평범한 사용자처럼 보인다
+      assert.equal(list[1].author.id, a.id);
+      assert.equal(list[1].author.name, a.name);
 
       const post = (await api.get(`/places/${gym.id}/posts`, { token: b.token })).body.items.find((p) => p.id === anonPost.id);
       assert.equal(post.commentCount, 2);

@@ -11,7 +11,7 @@ describe('장소', () => {
   let api;
   let a;
   let b;
-  let c; // 기본 장소가 없는 다른 학교
+  let c; // 다른 학교 (테스트용 기본 장소 '중앙운동장' 1개)
   let gym;
 
   before(async () => {
@@ -32,8 +32,9 @@ describe('장소', () => {
       gym = places.find((p) => p.name === '체육관');
     });
 
-    it('다른 학교 사용자에게는 보이지 않는다', async () => {
-      assert.deepEqual((await api.get('/places', { token: c.token })).body, []);
+    it('다른 학교 사용자에게는 자기 학교 장소만 보인다', async () => {
+      const places = (await api.get('/places', { token: c.token })).body;
+      assert.deepEqual(places.map((p) => p.name), ['중앙운동장']);
     });
   });
 
@@ -83,9 +84,10 @@ describe('장소', () => {
       assert.equal((await pool.query("SELECT 1 FROM place WHERE name = '먼곳'"))[0].length, 0);
     });
 
-    it('기본 장소가 없는 학교 → 400', async () => {
-      const res = await api.post('/posts', { token: c.token, body: { newPlace: { name: '어딘가', latitude: 37.5, longitude: 127 }, text: 'x' } });
+    it('반경은 자기 학교 기준: 다른 학교 학생이 미림마고 위치에 만들면 400', async () => {
+      const res = await api.post('/posts', { token: c.token, body: { newPlace: at('남의학교'), text: 'x' } });
       assert.equal(res.status, 400);
+      assert.match(res.body.message, /300m/);
     });
 
     it('placeId·newPlace 둘 다 또는 둘 다 없음·위치 누락 → 400', async () => {
