@@ -17,8 +17,8 @@
 | --- | --- |
 | 리전 | 서울 (ap-northeast-2) |
 | 서버 주소 | **`http://54.116.64.176`** (탄력적 IP) |
-| EC2 | Ubuntu 24.04, t3.micro, 보안 그룹 `donut-server-sg` |
-| RDS | MySQL 8.4, DB `donut`, 앱 계정 `donut_app`, 보안 그룹 `donut-rds-sg` |
+| EC2 | Ubuntu 24.04, t3.micro, 보안 그룹 `donut-server-sg` + `ec2-rds-1` |
+| RDS | MySQL 8.4, DB `donut`, 앱 계정 `donut_app`, **퍼블릭 액세스 불가능**, 보안 그룹 `rds-ec2-1` |
 | HTTPS | 미적용 (도메인 없음) |
 
 ---
@@ -43,7 +43,16 @@
 > 탄력적 IP 목록에 해제할 수 없는 `43.202.x.x` 주소가 있다면 **RDS 퍼블릭 액세스가 켜져 있어서 생긴 RDS의 IP**임. 건드리지 말 것. 퍼블릭 액세스를 끄면 사라짐.
 
 ## 2단계: RDS가 EC2 접속을 허용하게 하기
-`donut-rds-sg` 인바운드: **MySQL/Aurora 3306, 소스 `donut-server-sg`** (IP가 아니라 보안 그룹을 선택)
+RDS → 데이터베이스 `donut` → **작업 → EC2 연결 설정** (연결된 컴퓨팅 리소스 설정) → 인스턴스 `donut-server` 선택
+
+AWS가 보안 그룹 한 쌍을 자동으로 만들어 붙여 줌.
+| 보안 그룹 | 붙는 곳 | 규칙 |
+| --- | --- | --- |
+| `ec2-rds-1` | EC2 | 아웃바운드 3306 → `rds-ec2-1` |
+| `rds-ec2-1` | RDS | 인바운드 3306 ← `ec2-rds-1` |
+
+- **EC2용 보안 그룹(`donut-server-sg`)을 RDS에 직접 붙이지 말 것.** 붙여도 아무 접속도 허용되지 않고 헷갈리기만 함
+- RDS에는 `rds-ec2-1`만 남기는 것이 가장 깔끔함 (현재 구성)
 
 ## 3단계: 서버 접속
 - 브라우저: EC2 → 인스턴스 → 연결 → **EC2 Instance Connect** (사용자 이름 `ubuntu`)
@@ -153,14 +162,32 @@ pm2 restart donut
 - DB 구조가 바뀌는 PR이면 **migration을 먼저** 실행
 - `.env`에 새 항목이 생겼는지 `.env.example`과 비교
 
-## 11단계: 배포 후 정리
-1. **RDS 퍼블릭 액세스 "아니요"** (수정 → 연결 → 즉시 적용)
-2. `donut-rds-sg`에서 **개인 IP 인바운드 규칙 삭제** (`donut-server-sg` 규칙은 유지)
-3. 이후 로컬에서 RDS가 필요하면 **EC2를 거치는 SSH 터널** 사용
+## 11단계: 배포 후 정리 (완료)
+1. RDS 수정 → 연결
+   - **퍼블릭 액세스 불가능** 선택
+   - VPC 보안 그룹은 **`rds-ec2-1`만** 남김 (개인 IP 규칙이 있던 보안 그룹, `default`, 잘못 붙은 `donut-server-sg` 제거)
+   - **즉시 적용** (재부팅 없음)
+2. 확인
+   - `http://54.116.64.176/api/keywords` → 키워드 12개 (EC2 → RDS 정상)
+   - RDS 엔드포인트가 외부에서 `172.31.x.x`(사설 IP)로만 조회됨
+   - 탄력적 IP 목록의 RDS 주소(`43.202.x.x`)가 사라짐
+
+## 로컬에서 RDS 접속하기 (SSH 터널)
+RDS가 비공개라서 로컬 PC(개발, `npm test`)는 **EC2를 거쳐서** 접속함.
+1. `donut-server-sg`의 SSH 22 "내 IP" 규칙이 **현재 IP**인지 확인 (IP가 바뀌면 갱신)
+2. PowerShell에서 터널 열기. **이 창은 켜 둔 채로** 작업함
    ```powershell
-   ssh -i .\donut-key.pem -N -L 3307:<RDS 엔드포인트>:3306 ubuntu@54.116.64.176
+   ssh -i .\donut-key.pem -N -L 3307:donut.clk0ikeeqg7a.ap-northeast-2.rds.amazonaws.com:3306 ubuntu@54.116.64.176
    ```
-   터널 창을 켜 둔 채로 로컬 `.env`를 `DB_HOST=127.0.0.1`, `DB_PORT=3307`로 변경 (`DB_SSL=true`는 유지)
+   아무것도 출력되지 않고 멈춰 있으면 정상 (터널 연결 중)
+3. 로컬 `.env`
+   ```ini
+   DB_HOST=127.0.0.1
+   DB_PORT=3307
+   DB_SSL=true
+   ```
+   터널로 접속하면 인증서 주소 확인은 건너뛰고 RDS 인증서인지만 확인함 (`src/config/env.js`)
+4. 터널을 닫으면 로컬에서 DB 접속이 끊김 → `ECONNREFUSED 127.0.0.1:3307`이 나오면 터널부터 확인
 
 ## 문제 해결
 | 증상 | 확인 |
@@ -169,6 +196,8 @@ pm2 restart donut
 | 브라우저에서 한참 로딩 후 실패 | `donut-server-sg`에 HTTP 80 `0.0.0.0/0` 규칙 |
 | `502 Bad Gateway` | `pm2 status`, `pm2 logs donut` |
 | Nginx 기본 페이지가 뜸 | `sites-enabled/default` 삭제 후 `reload` |
-| `/api/keywords`가 500 | `pm2 logs donut`: `ETIMEDOUT`이면 2단계 규칙, `Access denied`면 `.env` 계정 정보 |
+| `/api/keywords`가 500 | `pm2 logs donut`: `ETIMEDOUT`이면 2단계 보안 그룹(`ec2-rds-1`/`rds-ec2-1`), `Access denied`면 `.env` 계정 정보 |
+| 로컬에서 `ECONNREFUSED 127.0.0.1:3307` | SSH 터널 창이 닫혔는지, `.env`의 `DB_HOST`·`DB_PORT` |
+| 터널 `ssh`가 멈췄다가 실패 | `donut-server-sg`의 SSH "내 IP" 규칙이 현재 IP인지 |
 | 사진 업로드 `413` | Nginx `client_max_body_size` |
 | 채팅이 실시간으로 안 옴 | Nginx의 `Upgrade`, `Connection` 헤더 |
