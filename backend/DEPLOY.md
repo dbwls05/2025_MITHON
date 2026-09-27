@@ -177,9 +177,9 @@ RDS가 비공개라서 로컬 PC(개발, `npm test`)는 **EC2를 거쳐서** 접
 1. `donut-server-sg`의 SSH 22 "내 IP" 규칙이 **현재 IP**인지 확인 (IP가 바뀌면 갱신)
 2. PowerShell에서 터널 열기. **이 창은 켜 둔 채로** 작업함
    ```powershell
-   ssh -i .\donut-key.pem -N -L 3307:donut.clk0ikeeqg7a.ap-northeast-2.rds.amazonaws.com:3306 ubuntu@54.116.64.176
+   ssh -i .\donut-key.pem -N -o ServerAliveInterval=60 -o ServerAliveCountMax=3 -L 3307:donut.clk0ikeeqg7a.ap-northeast-2.rds.amazonaws.com:3306 ubuntu@54.116.64.176
    ```
-   아무것도 출력되지 않고 멈춰 있으면 정상 (터널 연결 중)
+   아무것도 출력되지 않고 멈춰 있으면 정상 (터널 연결 중). `ServerAliveInterval`은 60초마다 신호를 보내 한동안 쓰지 않아도 터널이 끊기지 않게 함
 3. 로컬 `.env`
    ```ini
    DB_HOST=127.0.0.1

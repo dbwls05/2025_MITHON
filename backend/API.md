@@ -407,7 +407,7 @@ socket.emit('chat:send', { roomId: 2, text: '안녕!' }, (res) => {
   if (res.ok) {
     // res.message: 저장된 Message
   } else {
-    alert(res.error); // 예: "메시지을(를) 입력해 주세요."
+    alert(res.error); // 예: "메시지를 입력해 주세요."
   }
 });
 ```

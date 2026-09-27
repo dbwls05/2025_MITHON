@@ -1,0 +1,63 @@
+# 백엔드 테스트 자동 실행
+# - main으로 가는 PR과 main에 push될 때, backend/ 아래가 바뀌었으면 npm test를 돌린다.
+# - RDS 대신 GitHub 서버 안에 임시 MySQL 8.4를 띄워서 테스트한다. (RDS는 VPC 내부 전용이라 접근 불가)
+# - 테스트가 쓰는 값은 모두 임시값이라 GitHub Secrets 설정이 필요 없다.
+name: Backend Test
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-test.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-test.yml'
+  workflow_dispatch: # Actions 탭에서 직접 실행
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: donut_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    defaults:
+      run:
+        working-directory: backend
+
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: donut_test
+      DB_SSL: 'false'
+      JWT_SECRET: ci-test-secret
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - run: npm ci
+
+      - run: npm test

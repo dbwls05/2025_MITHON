@@ -104,6 +104,17 @@ describe('회원/인증', () => {
     assert.equal(wrong.body.message, unknown.body.message);
   });
 
+  it('에러 메시지 조사는 받침에 맞춘다 (아이디를 / 비밀번호를 / 이름을 / 이름은)', async () => {
+    const noId = await api.post('/auth/login', { body: { password: PASSWORD } });
+    assert.equal(noId.body.message, '아이디를 입력해 주세요.');
+    const noPassword = await api.post('/auth/login', { body: { identifier: 'someone' } });
+    assert.equal(noPassword.body.message, '비밀번호를 입력해 주세요.');
+
+    const base = { identifier: 'josa', password: PASSWORD, passwordConfirm: PASSWORD, schoolCode: SCHOOLS.MIRIM.code, grade: 1, classNum: 1 };
+    assert.equal((await api.post('/auth/signup', { body: base })).body.message, '이름을 입력해 주세요.');
+    assert.equal((await api.post('/auth/signup', { body: { ...base, name: 'x'.repeat(17) } })).body.message, '이름은 16자 이하로 입력해 주세요.');
+  });
+
   it('인증: 토큰 없음·변조 토큰 → 401', async () => {
     const { body } = await api.post('/auth/login', { body: { identifier: 'seyoung', password: PASSWORD } });
     assert.equal((await api.get('/users/me')).status, 401);
