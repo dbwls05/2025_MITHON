@@ -19,7 +19,14 @@
 | 환경 | 주소 |
 | --- | --- |
 | 로컬 개발 | `http://localhost:3000` (백엔드 `.env`의 `PORT`) |
-| 배포 | 미정 |
+| 배포 (EC2) | **`http://54.116.64.176`** (현재 **HTTP만** 지원) |
+
+- 배포 서버는 실제 DB를 사용함. 테스트용 계정·게시글을 만들었다면 정리할 것.
+
+> [!WARNING]
+> **프론트엔드를 Vercel·Netlify 등에 배포하면 자동으로 HTTPS가 되어, HTTP인 현재 배포 서버 API를 브라우저가 차단함 (Mixed Content).**
+> 외부에 배포할 계획이면 **미리 백엔드 담당에게 알려서 HTTPS를 먼저 적용**해야 함. 자세한 내용은 [DEPLOY.md](DEPLOY.md) 맨 위 참고.
+> 프론트를 백엔드와 같은 EC2(Nginx)에서 제공하면 HTTP만으로 동작함.
 
 - REST API는 모두 `/api`로 시작함. 예: `http://localhost:3000/api/auth/login`
 - 서버 상태 확인: `GET /health` → `{ "status": "ok" }`
@@ -382,11 +389,11 @@
 ## 5. 실시간 (Socket.IO)
 
 ```html
-<!-- 백엔드 서버가 버전이 맞는 클라이언트를 직접 제공함 -->
+<!-- 백엔드 서버가 버전이 맞는 클라이언트를 직접 제공함. 배포 서버는 http://54.116.64.176/socket.io/socket.io.js -->
 <script src="http://localhost:3000/socket.io/socket.io.js"></script>
 ```
 ```js
-const socket = io('http://localhost:3000', { auth: { token } });
+const socket = io(CONFIG.API_BASE_URL, { auth: { token } }); // 로컬 http://localhost:3000, 배포 http://54.116.64.176
 
 socket.on('connect_error', (err) => {
   if (err.message === 'UNAUTHORIZED') { /* 토큰 만료 → 로그인 화면으로 */ }
@@ -430,12 +437,12 @@ socket.on('friend:added', ({ friend, roomId }) => {
 ## 6. 카카오맵 연동
 
 - **JavaScript 키는 백엔드 담당(세영)에게 받기.** REST API 키·Admin 키는 프론트에서 쓰지 않음.
-- 카카오 개발자 콘솔에 **사용하는 개발 주소(`http://localhost:포트`)가 등록되어 있어야** 지도가 뜸. 주소가 다르면 백엔드 담당에게 등록 요청.
+- 카카오 개발자 콘솔에 **지도를 띄우는 페이지의 주소가 등록되어 있어야** 지도가 뜸. 현재 등록: `http://localhost:포트`, `http://54.116.64.176`. 다른 주소를 쓰면 백엔드 담당에게 등록 요청.
 
 ```js
 // js/config.js (키를 한 곳에서 관리)
 const CONFIG = {
-  API_BASE_URL: 'http://localhost:3000',
+  API_BASE_URL: 'http://localhost:3000', // 배포: 'http://54.116.64.176'
   KAKAO_JS_KEY: '전달받은_JavaScript_키',
 };
 ```
