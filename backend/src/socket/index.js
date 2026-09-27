@@ -13,10 +13,11 @@
 const { Server } = require('socket.io');
 const chatService = require('../services/chat.service');
 const { verifyToken } = require('../utils/token');
+const { corsOrigins } = require('../config/env');
 const { setIO, userChannel } = require('./io');
 
 function initSocket(httpServer) {
-  const io = new Server(httpServer, { cors: { origin: '*' } });
+  const io = new Server(httpServer, { cors: { origin: corsOrigins.length > 0 ? corsOrigins : '*' } });
 
   io.use((socket, next) => {
     try {

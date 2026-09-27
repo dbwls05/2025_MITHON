@@ -13,6 +13,7 @@
     "test": "node --test --test-concurrency=1 \"test/**/*.test.js\""
   },
   "dependencies": {
+    "aws-ssl-profiles": "^1.1.2",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^18.0.4",

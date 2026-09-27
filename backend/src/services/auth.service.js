@@ -15,7 +15,7 @@ async function signup({ identifier, password, name, schoolCode, grade, classNum,
   const hashed = await bcrypt.hash(password, SALT_ROUNDS);
 
   const account = await withTransaction(async (conn) => {
-    const schoolId = await schoolService.findOrCreateByCode(conn, schoolCode);
+    const schoolId = await schoolService.getSupportedSchoolId(conn, schoolCode);
 
     let userId;
     try {

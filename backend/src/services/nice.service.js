@@ -41,13 +41,4 @@ async function searchSchools(name) {
   return rows.map(toSchool);
 }
 
-// 학교 코드로 한 곳 조회. 없으면 null
-async function getSchoolByCode(code) {
-  const [officeCode, schoolCode] = String(code).split('_');
-  if (!officeCode || !schoolCode) return null;
-
-  const rows = await requestSchoolInfo({ ATPT_OFCDC_SC_CODE: officeCode, SD_SCHUL_CODE: schoolCode });
-  return rows.length > 0 ? toSchool(rows[0]) : null;
-}
-
-module.exports = { searchSchools, getSchoolByCode };
+module.exports = { searchSchools };

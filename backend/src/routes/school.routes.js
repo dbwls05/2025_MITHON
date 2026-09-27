@@ -4,6 +4,6 @@ const schoolController = require('../controllers/school.controller');
 
 const router = Router();
 
-router.get('/search', schoolController.search); // NICE 학교 검색 ?name= (고등학교)
+router.get('/search', schoolController.search); // NICE 학교 검색 ?name= (고등학교, 서비스 여부 isSupported 포함)
 
 module.exports = router;
