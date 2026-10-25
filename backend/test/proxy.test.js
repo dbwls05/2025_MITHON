@@ -22,7 +22,7 @@ describe('배포 설정', () => {
       body: JSON.stringify({ identifier: 'proxyuser' }),
     });
 
-  describe('TRUST_PROXY: Nginx가 넘겨준 실제 사용자 IP로 로그인 시도를 센다', () => {
+  describe('TRUST_PROXY: 프록시가 넘겨준 실제 사용자 IP로 로그인 시도를 센다', () => {
     it('같은 사용자 IP에서 10번 실패하면 11번째는 429', async () => {
       for (let i = 0; i < 10; i++) assert.equal((await failLogin('203.0.113.1')).status, 400);
       assert.equal((await failLogin('203.0.113.1')).status, 429);
