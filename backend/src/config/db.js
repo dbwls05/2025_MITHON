@@ -15,7 +15,7 @@ const pool = mysql.createPool({
   timezone: 'Z',
 });
 
-// RDS는 기본이 UTC지만, 로컬 MySQL(KST 등)에서도 같은 동작을 하도록 세션 시간대를 고정한다
+// DB 서버의 기본 시간대(Railway는 UTC, 로컬 MySQL은 KST 등)와 상관없이 같은 동작을 하도록 세션 시간대를 고정한다
 pool.pool.on('connection', (conn) => {
   conn.query("SET time_zone = '+00:00'");
 });
