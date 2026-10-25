@@ -28,7 +28,6 @@ function trustProxy() {
 }
 
 // CORS_ORIGIN: API를 호출할 수 있는 프론트엔드 주소 (쉼표로 여러 개). 비어 있으면 모두 허용 (로컬 개발)
-// 프론트를 API와 같은 주소(같은 Nginx)에서 제공하면 넣을 필요 없다.
 function corsOrigins() {
   return (process.env.CORS_ORIGIN || '').split(',').map((origin) => origin.trim()).filter(Boolean);
 }

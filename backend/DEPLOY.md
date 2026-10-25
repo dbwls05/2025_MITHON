@@ -2,24 +2,27 @@
 
 ## 현재 구성
 ```
-브라우저 ──HTTPS──▶ Railway 서비스 donut-backend (Node, Socket.IO) ──내부망──▶ Railway MySQL
-                                      └─ Volume /app/uploads (프로필 사진)
+브라우저 ──HTTPS──▶ Railway 백엔드 서비스 (Node, Socket.IO) ──내부망──▶ Railway MySQL
+                      └─ Volume /app/uploads (프로필 사진)    └─ Volume /var/lib/mysql (DB 데이터)
 ```
 | 항목 | 값 |
 | --- | --- |
-| 리전 | 싱가포르 (`asia-southeast1`). 서버와 DB를 **같은 리전**에 둠 |
-| 서버 주소 | `https://<서비스 이름>.up.railway.app` (Railway가 HTTPS 자동 적용) |
-| 서버 | GitHub `dbwls05/2025_MITHON` 연결, Root Directory `/backend`, `npm start` |
+| 서버 주소 | **`https://2025mithon-production.up.railway.app`** (Railway가 HTTPS 자동 적용) |
+| 서버 | `dbwls05/2025_MITHON`의 **Fork** 연결, Root Directory `/backend`, `npm start` |
 | DB | Railway MySQL, DB `railway` (기본 DB, 대시보드 Data 탭에서 보임), 앱 계정 `donut_app` |
-| 업로드 파일 | Volume을 `/app/uploads`에 연결 (없으면 재배포 때마다 사진이 사라짐) |
+| 업로드 파일 | 백엔드 서비스에 Volume을 `/app/uploads`로 연결 (없으면 재배포 때마다 사진이 사라짐) |
+| 리전 | 서버와 DB를 **같은 리전**에 둠 |
 
-> 이전 AWS(EC2 + RDS) 구성 문서는 git 기록에 남아 있음. RDS 데이터는 옮기지 않고 스키마·seed로 새로 시작함 → [AWS 정리](#aws-정리-요금-방지)
+> 이전 AWS(EC2 + RDS) 구성은 정리 완료. 문서는 git 기록에 남아 있음. RDS 데이터는 옮기지 않고 스키마·seed로 새로 시작함
+
+> [!IMPORTANT]
+> **MySQL 서비스의 Volume(`/var/lib/mysql`)은 절대 수정·삭제하지 말 것.** DB 데이터가 모두 들어 있음.
 
 ---
 
-## 1단계: 프로젝트와 MySQL 만들기
+## 1단계: 프로젝트와 MySQL 만들기 (완료)
 1. Railway → **New Project → Deploy MySQL** (또는 빈 프로젝트에서 **+ Create → Database → MySQL**)
-2. MySQL 서비스 → Settings → **Region**을 싱가포르로
+2. MySQL 서비스 → Settings → **Region** 선택 (백엔드 서비스와 같게)
 3. MySQL 서비스 → **Variables**에서 확인할 값
    - `MYSQL_ROOT_PASSWORD`: 마스터(root) 비밀번호
    - `MYSQL_PUBLIC_URL`: 외부(로컬 PC)에서 접속하는 주소 `mysql://root:<비밀번호>@<xxx.proxy.rlwy.net>:<포트>/railway`
@@ -40,17 +43,19 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON railway.* TO 'donut_app'@'%';
   Get-Content db\schema.sql -Encoding utf8 | mysql -h <주소> -P <포트> -u root -p --ssl-mode=REQUIRED --default-character-set=utf8mb4 railway
   ```
 
-## 3단계: 백엔드 서비스 만들기
-1. 프로젝트 → **+ Create → GitHub Repo** → `dbwls05/2025_MITHON`
+## 3단계: 백엔드 서비스 만들기 (완료)
+1. 프로젝트 → **+ Create → GitHub Repo** → 레포 선택
+   - Railway GitHub 앱은 **레포 소유자 계정에만** 설치할 수 있어서, 원본(`dbwls05/2025_MITHON`)이 목록에 안 보이면 **내 계정으로 Fork해서 연결** (현재 구성)
 2. 서비스 → Settings
-   - **Root Directory**: `/backend`
+   - **Root Directory**: `/backend` (없으면 `Railpack failed to prepare the build`로 빌드 실패)
    - **Watch Paths**: `/backend/**` (프론트만 바뀐 커밋으로는 재배포하지 않음)
-   - **Region**: 싱가포르 (MySQL과 같게)
+   - **Region**: MySQL과 같게
    - **Healthcheck Path**: `/health`
-   - Networking → **Generate Domain** → `https://<이름>.up.railway.app`
-3. 서비스에서 우클릭(또는 Command `⌘K`) → **Attach Volume** → Mount path **`/app/uploads`**
+   - Networking → **Generate Domain** → `https://2025mithon-production.up.railway.app`
+3. **백엔드 서비스** 카드에서 우클릭(또는 `Ctrl+K`) → **Attach Volume** → Mount path **`/app/uploads`**
+   - MySQL 카드에 붙은 `/var/lib/mysql` Volume과 헷갈리지 말 것. 캔버스에서 백엔드 카드 아래에 `/app/uploads` Volume이 따로 보여야 함
 
-## 4단계: 서버 환경 변수
+## 4단계: 서버 환경 변수 (완료)
 서비스 → **Variables → Raw Editor**
 ```ini
 DB_HOST=${{MySQL.MYSQLHOST}}
@@ -74,12 +79,16 @@ CORS_ORIGIN=
 변수를 저장하면 자동으로 배포됨.
 
 **확인**
-- `https://<이름>.up.railway.app/health` → `{"status":"ok"}` (서버 동작)
-- `https://<이름>.up.railway.app/api/keywords` → 키워드 목록 (**DB 연결까지** 확인)
-- 카카오 콘솔 사이트 도메인에 새 `https://` 주소 추가
+- `https://2025mithon-production.up.railway.app/health` → `{"status":"ok"}` (서버 동작)
+- `https://2025mithon-production.up.railway.app/api/keywords` → 키워드 목록 (**DB 연결까지** 확인)
+- 카카오 콘솔 사이트 도메인에 Railway 주소 등록 (완료)
+- 일부 네트워크(학교·회사 망 등)에서는 `*.up.railway.app` 접속이 막혀 있음. 안 열리면 휴대폰 데이터나 다른 네트워크로 확인
 
 ## 업데이트
-- `main`에 push하면 **자동 배포**됨 (`backend/` 아래가 바뀐 경우)
+- Railway는 **Fork의 `main`**을 배포함. 원본에 merge해도 바로 배포되지 않음
+  1. 원본 `dbwls05/2025_MITHON`의 `main`에 PR merge
+  2. GitHub에서 내 Fork → **Sync fork → Update branch**
+  3. Fork의 `main`이 바뀌면 **자동 배포**됨 (`backend/` 아래가 바뀐 경우)
 - DB 구조가 바뀌는 PR이면 **merge 전에 migration을 root로 먼저** 실행
   ```powershell
   Get-Content db\migrations\00X_xxx.sql -Encoding utf8 | mysql -h <주소> -P <포트> -u root -p --ssl-mode=REQUIRED --default-character-set=utf8mb4 railway
@@ -103,21 +112,13 @@ DB_SSL=true
 
 ---
 
-## AWS 정리 (요금 방지)
-Railway에서 문제없이 동작하는 것을 확인한 뒤에 진행.
-1. RDS → `donut` → **삭제** (최종 스냅샷 생성 선택 시 스냅샷 보관 요금이 나오니 필요 없으면 나중에 스냅샷도 삭제)
-2. EC2 → 인스턴스 설정 → **종료 방지 비활성화** → 인스턴스 **종료**
-3. **탄력적 IP 릴리스** (인스턴스가 없어도 할당만 되어 있으면 요금이 나옴)
-4. 보안 그룹 `donut-server-sg`, `ec2-rds-1`, `rds-ec2-1`, 키 페어 삭제
-
----
-
 ## 문제 해결
 | 증상 | 확인 |
 | --- | --- |
-| 배포 실패 | Deployments → Build Logs. Root Directory가 `/backend`인지 |
+| 배포 실패 (`Railpack failed to prepare the build`) | Root Directory가 `/backend`인지. 그 외에는 Deployments → Build Logs |
+| merge했는데 배포가 안 됨 | Fork에서 **Sync fork**를 했는지 |
 | `/health`는 되는데 `/api/keywords`가 500 | Deploy Logs: `ENOTFOUND mysql.railway.internal`이면 `DB_HOST` 참조(`${{MySQL.MYSQLHOST}}`)와 서버·DB가 같은 프로젝트인지, `Access denied`면 `DB_USER`/`DB_PASSWORD`와 2단계 GRANT |
-| 재배포 후 프로필 사진이 깨짐 | Volume이 `/app/uploads`에 연결되어 있는지 |
+| 재배포 후 프로필 사진이 깨짐 | **백엔드 서비스**에 Volume이 `/app/uploads`로 연결되어 있는지 |
 | 로그인 시도 제한이 여러 사용자에게 같이 걸림 | `TRUST_PROXY=1` |
 | 로컬에서 `ETIMEDOUT`/`ECONNREFUSED` | `.env`의 `DB_HOST`·`DB_PORT`가 MySQL Variables의 `MYSQL_PUBLIC_URL`과 같은지 (TCP Proxy를 다시 만들면 주소가 바뀜) |
 | 로컬에서 SSL 관련 에러 | `DB_SSL=true`/`false`를 바꿔 시도 |
