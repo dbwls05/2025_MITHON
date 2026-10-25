@@ -1,6 +1,6 @@
 # 백엔드 테스트 자동 실행
 # - main으로 가는 PR과 main에 push될 때, backend/ 아래가 바뀌었으면 npm test를 돌린다.
-# - RDS 대신 GitHub 서버 안에 임시 MySQL 8.4를 띄워서 테스트한다. (RDS는 VPC 내부 전용이라 접근 불가)
+# - 운영 DB(Railway) 대신 GitHub 서버 안에 임시 MySQL 8.4를 띄워서 테스트한다.
 # - 테스트가 쓰는 값은 모두 임시값이라 GitHub Secrets 설정이 필요 없다.
 name: Backend Test
 

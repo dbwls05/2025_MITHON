@@ -10,7 +10,7 @@ const { notFound, errorHandler } = require('./middlewares/errorHandler');
 
 const app = express();
 
-// 프록시(Nginx) 뒤에서 req.ip가 실제 사용자 IP가 되게 한다. 로그인 시도 제한이 사용자별로 동작하려면 필요
+// 프록시(Railway) 뒤에서 req.ip가 실제 사용자 IP가 되게 한다. 로그인 시도 제한이 사용자별로 동작하려면 필요
 app.set('trust proxy', trustProxy);
 
 app.use(cors({ origin: corsOrigins.length > 0 ? corsOrigins : '*' }));
